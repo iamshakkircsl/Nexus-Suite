@@ -1,0 +1,31 @@
+<svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <rect x="50" y="25" width="110" height="18" fill="#e8a020" opacity="0.85" rx="1" />
+  <rect x="50" y="43" width="22" height="114" fill="#e8a020" opacity="0.85" rx="1"/>
+  <rect x="50" y="157" width="110" height="18" fill="#e8a020" opacity="0.85" rx="1"/>
+
+  <g stroke="#8aa8c0" stroke-width="0.8">
+    <line x1="50" y1="18" x2="160" y2="18"/>
+    <line x1="50" y1="14" x2="50" y2="22"/>
+    <line x1="160" y1="14" x2="160" y2="22"/>
+    <text x="105" y="12" fill="#8aa8c0" font-family="DM Mono,monospace" font-size="9" text-anchor="middle">b_f</text>
+
+    <line x1="165" y1="25" x2="165" y2="43"/>
+    <line x1="164" y1="25" x2="169" y2="25"/>
+    <line x1="164" y1="43" x2="169" y2="43"/>
+    <text x="172" y="37" fill="#8aa8c0" font-family="DM Mono,monospace" font-size="9" text-anchor="start">t_f</text>
+
+    <line x1="40" y1="43" x2="40" y2="157"/>
+    <line x1="36" y1="43" x2="44" y2="43"/>
+    <line x1="36" y1="157" x2="44" y2="157"/>
+    <text x="32" y="103" fill="#8aa8c0" font-family="DM Mono,monospace" font-size="9" text-anchor="middle" transform="rotate(-90 32 103)">h_w</text>
+
+    <line x1="50" y1="184" x2="72" y2="184"/>
+    <line x1="50" y1="180" x2="50" y2="188"/>
+    <line x1="72" y1="180" x2="72" y2="188"/>
+    <text x="61" y="195" fill="#8aa8c0" font-family="DM Mono,monospace" font-size="9" text-anchor="middle">t_w</text>
+  </g>
+
+  <tspan id="svg_bp_val" display="none">200</tspan>
+  <tspan id="svg_tp_val" display="none">12</tspan>
+</svg>
+  

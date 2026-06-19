@@ -1,0 +1,535 @@
+/* ═══════════════════════════════════════════════════════════
+   CSL DESIGN PORTAL — GLOBAL STYLESHEET (TAMER LIGHT MODE)
+   Cochin Shipyard Limited
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── DESIGN TOKENS ── */
+:root {
+  --navy:    #e2e8f0;   /* Deeper technical grey so white cards pop clearly */
+  --deep:    #ffffff;   /* Pure white for content cards & homepage nav bars */
+  --ocean:   #cbd5e1;   /* Soft layout selections */
+  --steel:   #cbd5e1;   /* Engineering layout lines & borders */
+  --rust:    #b45309;   /* Desaturated technical rust accent */
+  --amber:   #c2410c;   /* Restrained warning tint */
+  --cyan:    #0369a1;   /* Primary engineer blue for links & active titles */
+  --fog:     #334155;   /* Dark slate for high-readability body copy */
+  --white:   #0f172a;   /* Deep slate-charcoal for clean typography */
+  --dim:     #64748b;   /* Muted structural subtext indicators */
+
+  /* Muted Frame Tokens (Tamer, desaturated slate-blue frame harmony) */
+  --frame-bg:   #1e293b; /* Tamer slate-blue instead of harsh stark navy */
+  --frame-text: #f8fafc; /* Clean off-white text for headers */
+  --frame-dim:  #94a3b8; /* Muted slate for frame subtext links */
+  --frame-line: #334155; /* Soft frame division boundaries */
+
+  /* Desaturated engineering accents for matching pillars */
+  --na-col:  #0369a1;
+  --st-col:  #b45309;
+  --el-col:  #0f766e;
+  --me-col:  #be123c;
+
+  --col: var(--cyan);
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--navy);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: auto;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1; opacity: 0.25;
+}
+
+/* ── ANIMATED GRID BACKGROUND ── */
+.grid-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background-image: 
+    linear-gradient(rgba(3, 105, 161, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(3, 105, 161, 0.08) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridDrift 40s linear infinite;
+}
+@keyframes gridDrift {
+  0% { background-position: 0 0; }
+  100% { background-position: 60px 60px; }
+}
+
+/* ── PROGRESS BAR ── */
+.progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cyan), var(--rust));
+  z-index: 1000; transition: width 0.1s; width: 0%;
+}
+
+/* ══════════════════════════════════════════
+   HEADER & NAV (TAMER SLATE-BLUE ANCHOR)
+══════════════════════════════════════════ */
+header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.4rem 3rem;
+  border-bottom: 1px solid var(--frame-line);
+  backdrop-filter: blur(12px);
+  background: rgba(18, 36, 66, 0.927); /* Soft technical slate-blue alpha layer */
+}
+
+.logo-block { display: flex; align-items: center; gap: 1rem; text-decoration: none; }
+.logo-ship {
+  height: 50px; 
+  max-height: 100%;
+  width: auto;        /* Proportional size that complements the twin-line layout title text */
+  object-fit: contain;  /* Prevents the image from stretching out of shape */
+  flex-shrink: 0;
+  transform: translate(5px,-3px);
+}
+.logo-text { display: flex; flex-direction: column; }
+.logo-main { font-family: 'Bebas Neue', sans-serif; font-size: 1.75rem; letter-spacing: 0.08em; color: var(--frame-text); line-height: 1; }
+.logo-sub { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--frame-dim); letter-spacing: 0.15em; text-transform: uppercase; }
+
+.header-right { display: flex; align-items: center; gap: 2rem; }
+
+nav { display: flex; gap: 2rem; align-items: center; }
+nav a {
+  font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--frame-dim); text-decoration: none; transition: color 0.2s, transform 0.2s;
+  font-family: 'DM Mono', monospace; font-weight: 500;
+}
+nav a:hover { color: var(--frame-text); }
+
+/* ── HAMBURGER ── */
+.hamburger {
+  background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; gap: 5px; padding: 4px; z-index: 200;
+}
+.hamburger span {
+  display: block; width: 22px; height: 2px; background: var(--frame-text);
+  transition: background 0.2s, transform 0.3s, opacity 0.3s;
+}
+.hamburger:hover span { background: var(--frame-dim); }
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ══════════════════════════════════════════
+   SIDE TRAY (TAMER SLATE COHESION)
+══════════════════════════════════════════ */
+.tray-overlay {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(4px);
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.tray-overlay.open { opacity: 1; pointer-events: all; }
+
+.side-tray {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 100;
+  width: min(340px, 85vw); background: var(--frame-bg);
+  border-left: 1px solid var(--frame-line);
+  transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto; padding: 2rem 0;
+}
+.side-tray.open { transform: translateX(0); }
+
+.tray-header { padding: 0 2rem 1.5rem; border-bottom: 1px solid var(--frame-line); margin-bottom: 1rem; }
+.tray-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.08em; color: var(--frame-text); }
+.tray-sub { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--frame-dim); margin-top: 0.2rem; }
+
+.tray-pillar { margin-bottom: 0.25rem; }
+.tray-pillar-btn {
+  width: 100%; background: none; border: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 2rem; cursor: pointer; transition: background 0.2s;
+}
+.tray-pillar-btn:hover { background: rgba(255, 255, 255, 0.04); }
+.tray-label { display: flex; align-items: center; gap: 0.75rem; }
+.tray-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tray-pillar-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.06em; color: var(--frame-text); }
+.tray-arrow { font-size: 0.7rem; color: var(--frame-dim); transition: transform 0.25s; }
+.tray-pillar.open .tray-arrow { transform: rotate(90deg); }
+
+.tray-tools { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgba(0, 0, 0, 0.15); }
+.tray-pillar.open .tray-tools { max-height: 500px; }
+
+.tray-tool-link {
+  display: block; padding: 0.6rem 2rem 0.6rem 3.5rem;
+  font-family: 'DM Mono', monospace; font-size: 0.75rem; letter-spacing: 0.05em;
+  color: var(--frame-dim); text-decoration: none; transition: color 0.2s, padding-left 0.2s;
+}
+.tray-tool-link:hover { color: var(--frame-text); padding-left: 4rem; }
+.tray-tool-link.view-all {
+  color: var(--frame-dim); border-top: 1px solid var(--frame-line); margin-top: 0.25rem; padding-top: 0.75rem;
+  font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.8;
+}
+.tray-tool-link.view-all:hover { color: var(--frame-text); }
+
+/* ══════════════════════════════════════════
+   SCROLL INDICATOR DOTS
+══════════════════════════════════════════ */
+.scroll-indicator {
+  position: fixed; right: 2rem; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 0.4rem; z-index: 20;
+}
+.scroll-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--steel);
+  transition: background 0.3s, transform 0.3s; cursor: pointer;
+}
+.scroll-dot.active { background: var(--cyan); transform: scale(1.5); }
+
+/* ══════════════════════════════════════════
+   HOMEPAGE — HERO
+══════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   HOMEPAGE — HERO (LEFT BRANDING BLOCK)
+══════════════════════════════════════════ */
+.hero {
+  position: relative; z-index: 5; min-height: 85vh;
+  display: grid; grid-template-columns: 1.2fr 0.8fr; align-items: center;
+  padding: 3rem; overflow: hidden; gap: 4rem;
+}
+
+.hero-left-content { 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: flex-start;
+  position: relative;     /* Absolute baseline anchor for the watermark */
+  width: 100%;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* ── WATERMARK BACKGROUND OVERLAY ── */
+.hero-left-content::before {
+  content: '';
+  position: absolute;
+  
+  /* Positioning parameters to tuck it behind the text layout */
+  left: -20px;            
+  top: 50%;
+  transform: translate(25%,-55%); /* Your custom alignment layout preserved */
+  
+  /* Watermark dimensions */
+  width: 450px;
+  height: 450px;
+  
+  /* Fetches the asset cleanly through your pathing */
+  background-image: url('../images/csl_logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  
+  /* ── MONOCHROMATIC BLUEPRINT FILTER ── */
+  /* Turns the logo shapes into a unified, dark technical slate tint */
+  filter: brightness(0) invert(0.15); 
+  
+  /* Restrained opacity for a sleek, blueprint look */
+  opacity: 0.2;          
+  
+  z-index: -1;            /* Places it safely underneath your text */
+  pointer-events: none;   /* Leaves the typography completely interactable */
+}
+
+/* ── TYPOGRAPHY METRICS ── */
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif; 
+  font-size: clamp(3.5rem, 8vw, 7.5rem);  /* Restored original text size */
+  line-height: 0.6;                      /* Dropped slightly from 0.92 to pull lines closer together */
+  letter-spacing: -0.01em;                /* Restored original tight letter spacing */
+  margin-top: 1.5rem;                     /* NEW: Pushes the entire title downward away from top header line */
+  margin-bottom: 0.75rem;                 /* HALVED: Pulls the subtitle paragraph text much closer to the title */
+  color: var(--white);                    /* Restored clean slate-charcoal color */
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; /* Smooth opening entry tracking */
+  
+}
+
+.hero-title .accent { color: var(--cyan); }
+.hero-title .rust { color: var(--rust); }
+
+
+/* ── PILLAR RIGHT MENU LAYOUT (WHITE POPPERS) ── */
+.hero-right-menu {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  margin-left: auto;  
+  width: 800px;        
+  max-width: 100%;
+  animation: fadeUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.menu-header {
+  font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 0.5rem; padding-left: 0.5rem;
+}
+
+/* Base Structural Item Styles */
+.pillar-menu-item {
+  display: flex; align-items: center; gap: 1rem; padding: 1.2rem 1.5rem;
+  height: 100px;      
+  border-radius: 7px;
+  background: var(--deep); text-decoration: none;
+  transition: background-color 0.25s, border-color 0.25s, transform 0.2s, box-shadow 0.2s;
+}
+.pillar-indicator { 
+  width: 4px; height: 18px; 
+  transition: background-color 0.25s; 
+}
+.pillar-menu-name { 
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.05em; 
+  transition: color 0.25s;
+}
+
+/* Individual Tool-Type Tinted Resting Borders & Accents */
+.pillar-menu-item.na-item { border: 1px solid var(--na-col); }
+.pillar-menu-item.na-item .pillar-indicator { background: var(--na-col); }
+.pillar-menu-item.na-item .pillar-menu-name { color: var(--na-col); }
+
+.pillar-menu-item.st-item { border: 1px solid var(--st-col); }
+.pillar-menu-item.st-item .pillar-indicator { background: var(--st-col); }
+.pillar-menu-item.st-item .pillar-menu-name { color: var(--st-col); }
+
+.pillar-menu-item.el-item { border: 1px solid var(--el-col); }
+.pillar-menu-item.el-item .pillar-indicator { background: var(--el-col); }
+.pillar-menu-item.el-item .pillar-menu-name { color: var(--el-col); }
+
+.pillar-menu-item.me-item { border: 1px solid var(--me-col); }
+.pillar-menu-item.me-item .pillar-indicator { background: var(--me-col); }
+.pillar-menu-item.me-item .pillar-menu-name { color: var(--me-col); }
+
+/* Global Hover Transformation Metrics */
+.pillar-menu-item:hover {
+  transform: translateX(6px);
+  box-shadow: 0 10px 20px -10px rgba(15, 23, 42, 0.15);
+}
+.pillar-menu-item:hover .pillar-menu-name { color: #ffffff !important; }
+.pillar-menu-item:hover .pillar-indicator { background: #ffffff !important; }
+
+/* Invert Background Blocks to Full Pillar Accent Color on Hover */
+.pillar-menu-item.na-item:hover { background: var(--na-col); border-color: var(--na-col); }
+.pillar-menu-item.st-item:hover { background: var(--st-col); border-color: var(--st-col); }
+.pillar-menu-item.el-item:hover { background: var(--el-col); border-color: var(--el-col); }
+.pillar-menu-item.me-item:hover { background: var(--me-col); border-color: var(--me-col); }
+
+/* ══════════════════════════════════════════
+   HOMEPAGE — SECTIONS & PILLARS
+══════════════════════════════════════════ */
+.section { position: relative; z-index: 5; padding: 6rem 2rem; }
+.section-label {
+  font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.8rem;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--steel), transparent); }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem, 5vw, 3.8rem); letter-spacing: 0.02em; line-height: 1; margin-bottom: 0.6rem; color: var(--white); }
+.section-sub { color: var(--fog); font-size: 0.95rem; line-height: 1.65; max-width: 560px; margin-bottom: 3.5rem; }
+
+.pillars-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--steel); gap: 1px; border: 1px solid var(--steel);
+}
+.pillar-card {
+  background: var(--deep); padding: 3rem 2rem 2.5rem;
+  position: relative; overflow: hidden; text-decoration: none; display: block;
+}
+.pillar-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--card-col, var(--cyan)); transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pillar-card:hover::before { transform: scaleX(1); }
+.pillar-card::after {
+  content: attr(data-num); position: absolute; right: 1rem; bottom: -1rem;
+  font-family: 'Bebas Neue', sans-serif; font-size: 8rem; line-height: 1;
+  color: rgba(0, 0, 0, 0.02); pointer-events: none; transition: color 0.3s;
+}
+.pillar-card:hover::after { color: rgba(0, 0, 0, 0.03); }
+
+.pillar-icon {
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+  overflow: visible;
+  transition: color 0.25s, transform 0.25s;
+  transform: translateY(-1px);
+}
+
+/* Base resting stroke color tokens */
+.pillar-menu-item.na-item .pillar-icon { color: var(--na-col); }
+.pillar-menu-item.st-item .pillar-icon { color: var(--st-col); }
+.pillar-menu-item.el-item .pillar-icon { color: var(--el-col); }
+.pillar-menu-item.me-item .pillar-icon { color: var(--me-col); }
+
+/* The icon instantly adopts the text hover color natively! */
+.pillar-menu-item:hover .pillar-icon {
+  color: #ffffff !important;
+  transform: scale(1.05);
+}
+.pillar-card:hover .pillar-icon { border-color: var(--card-col); background: var(--card-col); color: #ffffff; }
+.pillar-icon::after {
+  content: ''; position: absolute; top: 3px; left: 3px; right: -3px; bottom: -3px;
+  border: 1px solid var(--steel); opacity: 0.5; pointer-events: none;
+}
+.pillar-card:hover .pillar-icon::after { border-color: var(--card-col); }
+
+.pillar-tag { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); margin-bottom: 0.5rem; }
+.pillar-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 0.02em; line-height: 1; margin-bottom: 1rem; color: var(--white); }
+.pillar-desc { font-size: 0.88rem; line-height: 1.65; color: var(--fog); margin-bottom: 2rem; }
+
+.pillar-topics { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 2.5rem; }
+.topic-tag {
+  font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.05em; padding: 0.25rem 0.6rem;
+  border: 1px solid var(--steel); color: var(--fog); text-transform: uppercase;
+}
+
+.pillar-link {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--white); text-decoration: none; transition: gap 0.2s, color 0.2s; font-weight: 500;
+}
+.pillar-card:hover .pillar-link { gap: 0.8rem; color: var(--card-col); }
+
+/* Set distinct variables per pillar index mapping */
+.pillar-card[data-num="01"] { --card-col: var(--na-col); }
+.pillar-card[data-num="02"] { --card-col: var(--st-col); }
+.pillar-card[data-num="03"] { --card-col: var(--el-col); }
+.pillar-card[data-num="04"] { --card-col: var(--me-col); }
+
+/* ══════════════════════════════════════════
+   HOMEPAGE — ABOUT SECTION
+══════════════════════════════════════════ */
+.about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top : 0px; }
+.about-card { background: var(--deep); border: 1px solid var(--steel); padding: 2.5rem; }
+.about-icon { font-size: 1.8rem; margin-bottom: 1.2rem; color: var(--cyan); }
+.about-card h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.04em; color: var(--white); margin-bottom: 0.75rem; }
+.about-card p { color: var(--fog); line-height: 1.65; font-size: 0.92rem; }
+
+/* ══════════════════════════════════════════
+   PILLAR SUBPAGE — HERO STRIP
+══════════════════════════════════════════ */
+.pillar-hero {
+  position: relative; z-index: 5; padding: 5rem 3rem 4rem;
+  border-bottom: 1px solid var(--steel); background: var(--deep); overflow: hidden;
+}
+.pillar-hero::after {
+  content: attr(data-num); position: absolute; right: 2rem; top: -2rem;
+  font-family: 'Bebas Neue', sans-serif; font-size: 15rem; line-height: 1;
+  color: rgba(0, 0, 0, 0.015); pointer-events: none; user-select: none;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--dim); text-decoration: none; transition: color 0.2s, gap 0.2s; margin-bottom: 2.5rem;
+}
+.back-link:hover { color: var(--col); gap: 0.8rem; }
+.pillar-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); margin-bottom: 0.5rem; }
+.pillar-page-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 6vw, 5.5rem);
+  line-height: 0.92; letter-spacing: 0.01em; margin-bottom: 1.2rem; color: var(--white);
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.pillar-page-title span { color: var(--col); }
+.pillar-page-desc { max-width: 500px; font-size: 0.95rem; line-height: 1.65; color: var(--fog); animation: fadeUp 0.6s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ══════════════════════════════════════════
+   PILLAR SUBPAGE — FILTER BAR
+══════════════════════════════════════════ */
+.filter-bar {
+  position: relative; z-index: 5; padding: 1.2rem 3rem; border-bottom: 1px solid var(--steel);
+  display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(8px);
+}
+.filter-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dim); margin-right: 0.5rem; }
+.filter-btn {
+  background: none; border: 1px solid transparent; color: var(--dim); font-family: 'DM Mono', monospace;
+  font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.3rem 0.8rem; cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.filter-btn:hover { color: var(--white); }
+.filter-btn.active { border-color: var(--col); color: var(--col); }
+
+/* ══════════════════════════════════════════
+   PILLAR SUBPAGE — TOOLS GRID
+══════════════════════════════════════════ */
+.tools-section { position: relative; z-index: 5; padding: 4rem 3rem; }
+.category-label {
+  font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem;
+}
+.category-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--steel), transparent); }
+
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 4rem; }
+.tool-card {
+  background: var(--deep); padding: 2.2rem; position: relative; overflow: hidden;
+  text-decoration: none; display: block; border: 1px solid var(--steel);
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.tool-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--col);
+  transform: scaleY(0); transform-origin: top; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tool-card:hover::before { transform: scaleY(1); }
+.tool-card:hover { border-color: var(--steel); box-shadow: 0 12px 24px -12px rgba(15, 23, 42, 0.04); }
+
+.tool-num { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; color: var(--dim); margin-bottom: 0.6rem; }
+.tool-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.03em; color: var(--white); margin-bottom: 0.5rem; line-height: 1.1; }
+.tool-desc { font-size: 0.88rem; line-height: 1.62; color: var(--fog); margin-bottom: 1.8rem; }
+
+.tool-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
+.tool-tag {
+  font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 0.2rem 0.5rem; border: 1px solid var(--steel); color: var(--dim);
+}
+.tool-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--navy); padding-top: 1.2rem; }
+.tool-link-label { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--col); transition: transform 0.2s; }
+.tool-card:hover .tool-link-label { transform: translateX(4px); }
+.tool-status { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+.tool-status.wip { color: var(--amber); }
+.tool-status.soon { color: var(--dim); opacity: 0.6; }
+
+/* ══════════════════════════════════════════
+   FOOTER (MATCHING SLATE FRAME CHASSIS)
+══════════════════════════════════════════ */
+footer {
+  position: relative; z-index: 5; padding: 3rem; border-top: 1px solid var(--frame-line);
+  background: var(--frame-bg); display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-left { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--frame-dim); }
+.footer-left span { color: var(--frame-text); }
+.footer-right { display: flex; gap: 1.5rem; }
+.footer-right a { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--frame-dim); text-decoration: none; transition: color 0.2s; }
+.footer-right a:hover { color: var(--frame-text); }
+
+/* ══════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  header { padding: 1rem 1.5rem; }
+  nav { display: none; }
+  .hero { grid-template-columns: 1fr; gap: 2rem; padding: 2rem 1.5rem; min-height: auto; margin-top: 1.5rem; }
+  .hero-title { font-size: 3.5rem; }
+  .section { padding: 4rem 1.5rem; }
+  .pillars-grid { grid-template-columns: 1fr; }
+  .pillar-card { padding: 2.5rem 1.5rem; }
+  .scroll-indicator { display: none; }
+  footer { flex-direction: column; text-align: center; gap: 1.5rem; padding: 2.5rem 1.5rem; }
+  .pillar-hero { padding: 3rem 1.5rem; }
+  .pillar-hero::after { font-size: 10rem; top: 0; }
+  .filter-bar { padding: 1rem 1.5rem; }
+  .tools-section { padding: 2.5rem 1.5rem; }
+}
