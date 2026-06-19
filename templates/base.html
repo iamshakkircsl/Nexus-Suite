@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}BASIC Design Tool{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_style %}{% endblock %}
+</head>
+<body>
+
+  <!-- Progress bar -->
+  <div class="progress-bar" id="progressBar"></div>
+
+  
+
+  <!-- ══ TRAY OVERLAY -->
+  <div class="tray-overlay" id="trayOverlay" onclick="closeTray()"></div>
+
+  <!-- ══ SIDE TRAY -->
+  <aside class="side-tray" id="sideTray">
+    <div class="tray-header">
+      <div class="tray-title">All Pillars</div>
+      <div class="tray-sub">NEXUS Design Tools</div>
+    </div>
+
+    <!-- Naval Architecture -->
+    <div class="tray-pillar {% if active_pillar == 'na' %}open{% endif %}" id="tray-na">
+      <button class="tray-pillar-btn" onclick="toggleTrayPillar('na')">
+        <div class="tray-pillar-label" style="display:flex;align-items:center;gap:8px;">
+          <div class="tray-dot" style="background:#00c8e0;flex-shrink:0;"></div>
+          <span class="tray-pillar-name">Basic Naval Arch.</span>
+        </div>
+        <span class="tray-arrow">▶</span>
+      </button>
+      <div class="tray-tools">
+        <a href="#" class="tray-tool-link">Tonnage Calculation</a>
+        <a href="#" class="tray-tool-link">Freeboard Calculation</a>
+        <a href="{{ url_for('chain_locker') }}" class="tray-tool-link">Chain Locker Space</a>
+        <a href="{{ url_for('basic_naval') }}" class="tray-tool-link view-all">View all tools →</a>
+      </div>
+    </div>
+
+    <!-- Structural -->
+    <div class="tray-pillar {% if active_pillar == 'st' %}open{% endif %}" id="tray-st">
+      <button class="tray-pillar-btn" onclick="toggleTrayPillar('st')">
+        <div class="tray-pillar-label" style="display:flex;align-items:center;gap:8px;">
+          <div class="tray-dot" style="background:#e8a020;flex-shrink:0;"></div>
+          <span class="tray-pillar-name">Structural</span>
+        </div>
+        <span class="tray-arrow">▶</span>
+      </button>
+      <div class="tray-tools">
+        <a href="#" class="tray-tool-link">Hull Girder Bending</a>
+        <a href="#" class="tray-tool-link">Plate Thickness</a>
+        <a href="#" class="tray-tool-link">Frame Spacing</a>
+        <a href="{{ url_for('structural') }}" class="tray-tool-link view-all">View all tools →</a>
+      </div>
+    </div>
+
+    <!-- Electrical -->
+    <div class="tray-pillar {% if active_pillar == 'el' %}open{% endif %}" id="tray-el">
+      <button class="tray-pillar-btn" onclick="toggleTrayPillar('el')">
+        <div class="tray-pillar-label" style="display:flex;align-items:center;gap:8px;">
+          <div class="tray-dot" style="background:#4af0a0;flex-shrink:0;"></div>
+          <span class="tray-pillar-name">Electrical</span>
+        </div>
+        <span class="tray-arrow">▶</span>
+      </button>
+      <div class="tray-tools">
+        <a href="#" class="tray-tool-link">Generator Sizing</a>
+        <a href="#" class="tray-tool-link">Cable Sizing</a>
+        <a href="#" class="tray-tool-link">Load Balance</a>
+        <a href="{{ url_for('electrical') }}" class="tray-tool-link view-all">View all tools →</a>
+      </div>
+    </div>
+
+    <!-- Mechanical -->
+    <div class="tray-pillar {% if active_pillar == 'me' %}open{% endif %}" id="tray-me">
+      <button class="tray-pillar-btn" onclick="toggleTrayPillar('me')">
+        <div class="tray-pillar-label" style="display:flex;align-items:center;gap:8px;">
+          <div class="tray-dot" style="background:#ff6060;flex-shrink:0;"></div>
+          <span class="tray-pillar-name">Mechanical</span>
+        </div>
+        <span class="tray-arrow">▶</span>
+      </button>
+      <div class="tray-tools">
+        <a href="#" class="tray-tool-link">AC Unit Sizing</a>
+        <a href="#" class="tray-tool-link">Pump Selection</a>
+        <a href="#" class="tray-tool-link">Pipe Diameter</a>
+        <a href="{{ url_for('mechanical') }}" class="tray-tool-link view-all">View all tools →</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ HEADER -->
+  <header>
+    <a href="{{ url_for('homepage') }}" class="logo-block">
+      <img src="{{ url_for('static', filename='images/csl_logo.png') }}" class="logo-ship" alt="CSL Logo">
+      <div class="logo-text">
+        <span class="logo-main">NEXUS Suite</span>
+        <span class="logo-sub">BASIC Design CSL</span>
+      </div>
+    </a>
+    <div class="header-right">
+      <nav>
+        <!-- <a href="{{ url_for('homepage') }}#pillars">Pillars</a>  -->
+        <a href="{{ url_for('homepage') }}#about">About Us</a>
+      </nav>
+      <button class="hamburger" id="hamburger" onclick="toggleTray()" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══ PAGE CONTENT -->
+  {% block content %}{% endblock %}
+
+  <!-- ══ FOOTER -->
+  <footer>
+    <div class="footer-left">NEXUS | BASIC Design Dept. CSL</div>
+    <div class="footer-right">
+      <!--<a href="{{ url_for('homepage') }}#pillars">Pillars</a>-->
+      <a href="{{ url_for('homepage') }}#about">About Us</a>
+    </div>
+  </footer>
+
+  <!-- ══ SHARED JS -->
+  <script>
+    // Progress bar
+    window.addEventListener('scroll', () => {
+      const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+      document.getElementById('progressBar').style.width = pct + '%';
+    });
+
+    // Side tray
+    function toggleTray() {
+      document.getElementById('sideTray').classList.toggle('open');
+      document.getElementById('trayOverlay').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    function closeTray() {
+      document.getElementById('sideTray').classList.remove('open');
+      document.getElementById('trayOverlay').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTray(); });
+
+    // Tray pillar dropdowns
+    function toggleTrayPillar(id) {
+      document.getElementById('tray-' + id).classList.toggle('open');
+    }
+
+    // Fade-in on scroll
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.pillar-card, .about-card, .tool-card').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(24px)';
+      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      observer.observe(el);
+    });
+  </script>
+  {% block extra_js %}{% endblock %}
+
+</body>
+</html>

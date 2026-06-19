@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}NEXUS : Marine Engineering Suite{% endblock %}
+
+{% block content %}
+
+  <!-- ══════════════════════════════════════════ HERO -->
+  <section class="hero" id="hero">
+
+    <div class="hero-left-content">
+      <h1 class="hero-title">
+        <span style="font-size: 1.75em;">NEXUS:</span><br>
+        <span class="accent" style="font-size: 0.6em; letter-spacing: 0.05em;">MARINE DESIGN <span class="rust">SUITE</span></span>
+      </h1>
+      <br/><br/>
+      <p class="hero-desc">
+        A comprehensive ship design tool interface covering the four core
+        disciplines of modern shipbuilding — from hydrostatics to high-voltage
+        systems, structural steel to rotating machinery.
+      </p>
+    </div>
+    <!-- RIGHT — pillar nav -->
+    <div class="hero-right-menu">
+      <p class="menu-header">Select a Pillar</p>
+
+      <a href="{{ url_for('basic_naval') }}" class="pillar-menu-item na-item">
+        <div class="pillar-indicator"></div>
+        <svg class="pillar-icon">
+          <use href="{{ url_for('static', filename='images/icon-anchor.svg') }}#icon"></use>
+        </svg>
+        <span class="pillar-menu-name">Basic Naval Architecture</span>
+      </a>
+
+      <a href="{{ url_for('structural') }}" class="pillar-menu-item st-item">
+        <div class="pillar-indicator"></div>
+        <svg class="pillar-icon">
+          <use href="{{ url_for('static', filename='images/icon-grid.svg') }}#icon"></use>
+        </svg>
+        <span class="pillar-menu-name">Structural Engineering</span>
+      </a>
+
+      <a href="{{ url_for('electrical') }}" class="pillar-menu-item el-item">
+        <div class="pillar-indicator"></div>
+        <svg class="pillar-icon">
+          <use href="{{ url_for('static', filename='images/icon-spark.svg') }}#icon"></use>
+        </svg>
+        <span class="pillar-menu-name">Electrical Systems</span>
+      </a>
+
+      <a href="{{ url_for('mechanical') }}" class="pillar-menu-item me-item">
+        <div class="pillar-indicator"></div>
+        <svg class="pillar-icon">
+          <use href="{{ url_for('static', filename='images/icon-gear.svg') }}#icon"></use>
+        </svg>
+        <span class="pillar-menu-name">Mechanical Systems</span>
+      </a>
+    </div>
+    
+  </section>
+
+  <!-- ══════════════════════════════════════════ ABOUT -->
+  <section class="section" id="about">
+    <p class="section-label">The Team</p>
+    <h2 class="section-title">About This Portal</h2>
+    <p class="section-sub">
+      Built during a summer internship at Cochin Shipyard Limited, this portal
+      centralises the design calculation tools used across the four core
+      engineering disciplines of shipbuilding.
+    </p>
+
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="about-icon">🚢</div>
+        <h3>What This Is</h3>
+        <p>A web-based tool interface for ship design calculations — covering naval architecture, structural, electrical, and mechanical domains. Inputs go in, reports come out.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">🏗️</div>
+        <h3>Where It's From</h3>
+        <p>Developed at Cochin Shipyard Limited, India's largest shipyard and the only facility capable of building and repairing the largest vessels that visit Indian ports.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-icon">👥</div>
+        <h3>Who Made It</h3>
+        <p>Intern team, Naval Architecture Department, CSL. B.Tech Year 1. Built as a practical tool for design engineers — not a demo, an actual workflow aid.</p>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}

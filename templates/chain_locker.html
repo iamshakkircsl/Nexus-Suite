@@ -1,0 +1,678 @@
+{% extends "base.html" %}
+{% set active_pillar = 'na' %}
+
+{% block title %}Chain Locker Sizing — CSL Design Portal{% endblock %}
+
+{% block extra_style %}
+<style>
+  :root { --col: var(--na-col); }
+
+  .tool-wrapper {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 24px;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  /* ── Header */
+  .tool-header { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--steel); }
+  .tool-eyebrow { font-family:'DM Mono',monospace; font-size:0.68rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--dim); margin-bottom:6px; }
+  .tool-title { font-family:'Bebas Neue',sans-serif; font-size:3.8rem; letter-spacing:0.04em; color:var(--white); line-height:1; }
+  .tool-title span { color:var(--cyan); }
+  .tool-desc { color:var(--fog); font-size:0.9rem; margin-top:6px; max-width:600px; line-height:1.6; }
+
+  /* ── Method tabs */
+  .tab-bar {
+    display: flex; gap: 0; margin-bottom: 24px;
+    border-bottom: 1px solid var(--steel);
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    padding: 10px 18px; margin-bottom: -1px;
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--dim); cursor: pointer; white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn:hover { color: var(--fog); }
+  .tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+  /* ── Split layout */
+  .tool-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+
+  /* ── Panel */
+  .panel { background:var(--deep); border:1px solid var(--steel); border-radius:6px; padding:24px; }
+  .panel-title { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--white); margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--steel); }
+
+  /* ── Fields */
+  .field { margin-bottom: 16px; }
+  .field label { display:block; font-family:'DM Mono',monospace; font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--cyan); margin-bottom:6px; }
+  .field input[type="number"], .field select {
+    width:100%; padding:10px 12px;
+    background:var(--navy); border:1px solid var(--steel);
+    color:var(--white); font-family:'DM Mono',monospace; font-size:0.9rem;
+    transition:border-color 0.2s; outline:none;
+  }
+  .field input[type="number"]:focus, .field select:focus { border-color:var(--cyan); }
+  .field input:disabled { opacity:0.3; cursor:not-allowed; }
+
+  /* slider */
+  .slider-wrap { display:flex; align-items:center; gap:12px; }
+  .slider-wrap input[type="range"] { flex:1; accent-color:var(--cyan); }
+  .slider-val { font-family:'DM Mono',monospace; font-size:0.9rem; color:var(--white); min-width:36px; text-align:right; }
+  .slider-hint { font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--dim); margin-top:4px; }
+
+  /* checkboxes */
+  .check-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; cursor:pointer; }
+  .check-row input[type="checkbox"] { width:16px; height:16px; accent-color:var(--cyan); cursor:pointer; }
+  .check-row span { font-family:'DM Mono',monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--fog); }
+
+  /* radio buttons layout alignment override */
+  .radio-group { display: flex; gap: 16px; margin-top: 8px; } /* */
+  
+  .radio-opt { 
+    display: inline-flex !important; /* FORCES button and text onto the same row */
+    align-items: center !important;   /* Centers them vertically perfectly */
+    gap: 8px;                         /* Controls the space between the dot and text */
+    cursor: pointer;                  /* */
+  }
+  
+  .radio-opt input[type="radio"] { 
+    margin: 0;                        /* Strips native browser alignment offsets */
+    accent-color: var(--cyan);        /* */
+    width: 15px;                      /* */
+    height: 15px;                     /* */
+    cursor: pointer;                  /* */
+  }
+  /* ── Buttons */
+  .action-row { display:flex; gap:10px; margin-top:22px; flex-wrap:wrap; }
+  .btn-calc {
+    padding:11px 22px; background:var(--cyan); color:var(--navy);
+    font-family:'DM Mono',monospace; font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase;
+    border:none; cursor:pointer; font-weight:600;
+    clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+    transition:background 0.2s;
+  }
+  .btn-calc:hover { background:var(--white); }
+  .btn-export { padding:11px 22px; background:transparent; border:1px solid var(--steel); color:var(--fog); font-family:'DM Mono',monospace; font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; transition:border-color 0.2s,color 0.2s; }
+  .btn-export:hover { border-color:var(--cyan); color:var(--white); }
+  .export-row { display:none; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  .export-row.visible { display:flex; }
+
+  /* ── Results */
+  .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:260px; color:var(--dim); font-family:'DM Mono',monospace; font-size:0.8rem; letter-spacing:0.1em; text-align:center; line-height:1.8; }
+  .empty-icon { font-size:2.2rem; margin-bottom:12px; opacity:0.4; }
+  .result-primary { background:var(--navy); border-left:4px solid var(--cyan); padding:16px 20px; border-radius:4px; margin-bottom:20px; }
+  .result-primary-label { font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--fog); margin-bottom:4px; }
+  .result-primary-value { font-family:'Bebas Neue',sans-serif; font-size:2.6rem; line-height:1; color:var(--white); }
+  .result-primary-unit { font-family:'DM Mono',monospace; font-size:1rem; color:var(--dim); }
+  .results-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+  .result-cell { background:var(--navy); border:1px solid var(--steel); border-radius:4px; padding:10px 12px; }
+  .result-cell-label { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim); display:block; margin-bottom:4px; }
+  .result-cell-value { font-family:'DM Mono',monospace; font-size:1rem; color:var(--white); font-weight:600; }
+  .result-cell-unit { font-size:0.78rem; color:var(--dim); }
+  .accept-badge { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:4px; font-family:'DM Mono',monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; font-weight:600; margin-bottom:20px; }
+  .accept-badge.pass { background:rgba(74,240,160,0.1); color:#4af0a0; border:1px solid rgba(74,240,160,0.3); }
+  .accept-badge.fail { background:rgba(255,96,96,0.1); color:#ff6060; border:1px solid rgba(255,96,96,0.3); }
+
+  /* ── Error */
+  .error-banner { display:none; background:rgba(200,68,10,0.12); border:1px solid var(--rust); color:#ff8060; padding:10px 14px; border-radius:4px; font-family:'DM Mono',monospace; font-size:0.78rem; margin-bottom:16px; }
+
+  /* ── Tab panes */
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+
+  @media(max-width:900px) { .tool-split { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tool-wrapper">
+
+  <div style="margin-bottom:20px;">
+    <a href="{{ url_for('basic_naval') }}" class="back-link">← Basic Naval Architecture</a>
+  </div>
+
+  <div class="tool-header">
+    <p class="tool-eyebrow">NA · Tool · 001</p>
+    <h1 class="tool-title">Chain Locker <span>Sizing</span></h1>
+    <p class="tool-desc">Select a calculation standard, enter inputs — the Excel model runs all calculations. Export the filled sheet or a PDF report directly.</p>
+  </div>
+
+  <!-- ── Method tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('ihc', this)">IHC Standard</button>
+    <button class="tab-btn" onclick="switchTab('cosco-round', this)">COSCO Round</button>
+    <button class="tab-btn" onclick="switchTab('cosco-rect', this)">COSCO Rect</button>
+    <button class="tab-btn" onclick="switchTab('ah-length', this)">AH Length</button>
+    <button class="tab-btn" onclick="switchTab('ah-weight', this)">AH Weight</button>
+  </div>
+
+  <!-- ══════════════════════════ IHC ══════════════════════════ -->
+  <div class="tab-pane active" id="pane-ihc">
+    <div class="tool-split">
+      <div class="panel">
+        <p class="panel-title">Inputs — IHC Standard</p>
+        <div class="error-banner" id="err-ihc"></div>
+        <div class="field"><label>Chain Diameter <span style="text-transform: none;">(d) [mm]</span></label><input type="number" id="ihc-chain_dia" step="1" min="15" value="50"></div>
+        <div class="field"><label>Total Chain Length (L) <span style="text-transform: none;">[m]</span></label><input type="number" id="ihc-chain_length" step="0.5" min="1" value="440"></div>
+        <div class="field"><label>Locker Diameter (D) <span style="text-transform: none;">[m]</span></label><input type="number" id="ihc-locker_dia" step="0.01" min="0.1" value="2.50"></div>
+        <label class="check-row"><input type="checkbox" id="ihc-taper"><span>30° Taper Included</span></label>
+        <label class="check-row"><input type="checkbox" id="ihc-mudbox"><span>Mudbox Included</span></label>
+        <div class="action-row">
+          <button class="btn-calc" onclick="calculate('ihc')">Calculate</button>
+        </div>
+        <div class="export-row" id="exp-ihc">
+          <button class="btn-export" onclick="exportFile('ihc','excel')">⬇ Export Excel</button>
+          <button class="btn-export" onclick="exportWordReport('ihc')">⬇ Export Word</button>
+          <button class="btn-export" onclick="exportFile('ihc','pdf')">⬇ Export PDF</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="empty-state" id="empty-ihc"><div class="empty-icon">⚓</div>Enter inputs and hit Calculate<br>to see results here.</div>
+        <div id="res-ihc" style="display:none;">
+          <p class="panel-title">Results — IHC Standard</p>
+          <div class="result-primary"><p class="result-primary-label">Required Locker Volume</p><span class="result-primary-value" id="ihc-volume">—</span><span class="result-primary-unit"> m³</span></div>
+          <div class="results-grid">
+            <div class="result-cell"><span class="result-cell-label">Required Locker Height</span><span class="result-cell-value" id="ihc-height">—</span><span class="result-cell-unit"> m</span></div>
+            <div class="result-cell"><span class="result-cell-label">D/H Ratio (limit &lt; 0.8)</span><span class="result-cell-value" id="ihc-dh">—</span></div>
+          </div>
+          <div id="ihc-badge" class="accept-badge"><span id="ihc-badge-text">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ COSCO ROUND ══════════════════════════ -->
+  <div class="tab-pane" id="pane-cosco-round">
+    <div class="tool-split">
+      <div class="panel">
+        <p class="panel-title">Inputs — COSCO Round</p>
+        <div class="error-banner" id="err-cosco-round"></div>
+        <div class="field"><label>Chain Diameter (d) [mm]</label><input type="number" id="cr-chain_dia" step="1" min="15" value="50" oninput="updateCoscoDia()"></div>
+        <div class="field">
+          <label>D/d Ratio (30 – 40)</label>
+          <div class="slider-wrap">
+            <input type="range" id="cr-ratio" min="30" max="40" step="1" value="32" oninput="updateCoscoDia()">
+            <span class="slider-val" id="cr-ratio-val">32</span>
+          </div>
+          <div class="slider-hint" id="cr-dia-hint">Locker diameter D = 1.600 m</div>
+        </div>
+        <div class="field"><label>Total Chain Length (L) [m]</label><input type="number" id="cr-chain_length" step="0.5" min="1" value="440"></div>
+        <label class="check-row"><input type="checkbox" id="cr-taper"><span>30° Taper Included</span></label>
+        <label class="check-row"><input type="checkbox" id="cr-mudbox"><span>Mudbox Included</span></label>
+        <div class="action-row"><button class="btn-calc" onclick="calculate('cosco-round')">Calculate</button></div>
+        <div class="export-row" id="exp-cosco-round">
+          <button class="btn-export" onclick="exportFile('cosco-round','excel')">⬇ Export Excel</button>
+          <button class="btn-export" onclick="exportWordReport('cosco-round')">⬇ Export Word</button>
+          <button class="btn-export" onclick="exportFile('cosco-round','pdf')">⬇ Export PDF</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="empty-state" id="empty-cosco-round"><div class="empty-icon">⚓</div>Enter inputs and hit Calculate<br>to see results here.</div>
+        <div id="res-cosco-round" style="display:none;">
+          <p class="panel-title">Results — COSCO Round</p>
+          <div class="result-primary"><p class="result-primary-label">Required Locker Volume</p><span class="result-primary-value" id="cr-volume">—</span><span class="result-primary-unit"> m³</span></div>
+          <div class="results-grid">
+            <div class="result-cell"><span class="result-cell-label">Required Locker Height</span><span class="result-cell-value" id="cr-height">—</span><span class="result-cell-unit"> m</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ COSCO RECT ══════════════════════════ -->
+  <div class="tab-pane" id="pane-cosco-rect">
+    <div class="tool-split">
+      <div class="panel">
+        <p class="panel-title">Inputs — COSCO Rectangular</p>
+        <div class="error-banner" id="err-cosco-rect"></div>
+        <div class="field"><label>Chain Diameter (d) [mm]</label><input type="number" id="crect-chain_dia" step="1" min="15" value="50"></div>
+        <div class="field"><label>Total Chain Length (L) [m]</label><input type="number" id="crect-chain_length" step="0.5" min="1" value="440"></div>
+        <div class="field"><label>Locker Length [m]</label><input type="number" id="crect-locker_length" step="0.01" min="0.1" value="3.00"></div>
+        <div class="field"><label>Locker Breadth [m]</label><input type="number" id="crect-locker_breadth" step="0.01" min="0.1" value="2.00"></div>
+        <div class="field">
+          <label>COSCO Coefficient k1 (0.00085 – 0.001)</label>
+          <div class="slider-wrap">
+            <input type="range" id="crect-k1" min="0.00085" max="0.001" step="0.000005" value="0.00085" oninput="document.getElementById('crect-k1-val').textContent = parseFloat(this.value).toFixed(5)">
+            <span class="slider-val" id="crect-k1-val">0.00085</span>
+          </div>
+          <div class="slider-hint">Tight stow ← 0.00085 &nbsp;&nbsp; 0.001 → Loose stow</div>
+        </div>
+        <label class="check-row"><input type="checkbox" id="crect-taper"><span>30° Taper Included</span></label>
+        <label class="check-row"><input type="checkbox" id="crect-mudbox"><span>Mudbox Included</span></label>
+        <div class="action-row"><button class="btn-calc" onclick="calculate('cosco-rect')">Calculate</button></div>
+        <div class="export-row" id="exp-cosco-rect">
+          <button class="btn-export" onclick="exportFile('cosco-rect','excel')">⬇ Export Excel</button>
+          <button class="btn-export" onclick="exportWordReport('cosco-rect')">⬇ Export Word</button>
+          <button class="btn-export" onclick="exportFile('cosco-rect','pdf')">⬇ Export PDF</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="empty-state" id="empty-cosco-rect"><div class="empty-icon">⚓</div>Enter inputs and hit Calculate<br>to see results here.</div>
+        <div id="res-cosco-rect" style="display:none;">
+          <p class="panel-title">Results — COSCO Rectangular</p>
+          <div class="result-primary"><p class="result-primary-label">Required Locker Volume</p><span class="result-primary-value" id="crect-volume">—</span><span class="result-primary-unit"> m³</span></div>
+          <div class="results-grid">
+            <div class="result-cell"><span class="result-cell-label">Required Locker Height</span><span class="result-cell-value" id="crect-height">—</span><span class="result-cell-unit"> m</span></div>
+            <div class="result-cell"><span class="result-cell-label">B/H Ratio (limit &lt; 0.8)</span><span class="result-cell-value" id="crect-bh">—</span></div>
+          </div>
+          <div id="crect-badge" class="accept-badge"><span id="crect-badge-text">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ AH LENGTH ══════════════════════════ -->
+  <div class="tab-pane" id="pane-ah-length">
+    <div class="tool-split">
+      <div class="panel">
+        <p class="panel-title">Inputs — Anchor Handling : Length Based</p>
+        <div class="error-banner" id="err-ah-length"></div>
+        <div class="field"><label>Chain Diameter (d) [mm]</label><input type="number" id="ahl-chain_dia" step="1" min="64" value="76"></div>
+        <div class="field"><label>Total Chain Length (L) [m]</label><input type="number" id="ahl-chain_length" step="0.5" min="1" value="440"></div>
+        <div class="field">
+          <label>Locker Shape</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="ahl-shape" value="Circle" checked onchange="toggleShape('ahl')"><span>Circle</span></label>
+            <label class="radio-opt"><input type="radio" name="ahl-shape" value="Rectangle" onchange="toggleShape('ahl')"><span>Rectangle</span></label>
+          </div>
+        </div>
+        <!-- Circle field -->
+        <div class="field" id="ahl-dia-field">
+          <label>Locker Diameter (D) [m]</label>
+          <input type="number" id="ahl-locker_dia" step="0.01" min="0.1" value="2.50">
+        </div>
+        <!-- Rectangle fields — dulled when circle selected -->
+        <div class="field" id="ahl-len-field">
+          <label>Locker Length [m]</label>
+          <input type="number" id="ahl-locker_length" step="0.01" min="0.1" value="3.00" disabled>
+        </div>
+        <div class="field" id="ahl-brd-field">
+          <label>Locker Breadth [m]</label>
+          <input type="number" id="ahl-locker_breadth" step="0.01" min="0.1" value="2.00" disabled>
+        </div>
+        <label class="check-row"><input type="checkbox" id="ahl-taper"><span>30° Taper Included</span></label>
+        <label class="check-row"><input type="checkbox" id="ahl-mudbox"><span>Mudbox Included</span></label>
+        <div class="action-row"><button class="btn-calc" onclick="calculate('ah-length')">Calculate</button></div>
+        <div class="export-row" id="exp-ah-length">
+          <button class="btn-export" onclick="exportFile('ah-length','excel')">⬇ Export Excel</button>
+          <button class="btn-export" onclick="exportWordReport('ah-length')">⬇ Export Word</button>
+          <button class="btn-export" onclick="exportFile('ah-length','pdf')">⬇ Export PDF</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="empty-state" id="empty-ah-length"><div class="empty-icon">⚓</div>Enter inputs and hit Calculate<br>to see results here.</div>
+        <div id="res-ah-length" style="display:none;">
+          <p class="panel-title">Results — AH Length Based</p>
+          <div class="result-primary"><p class="result-primary-label">Required Locker Volume</p><span class="result-primary-value" id="ahl-volume">—</span><span class="result-primary-unit"> m³</span></div>
+          <div class="results-grid">
+            <div class="result-cell"><span class="result-cell-label">Required Locker Height</span><span class="result-cell-value" id="ahl-height">—</span><span class="result-cell-unit"> m</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ AH WEIGHT ══════════════════════════ -->
+  <div class="tab-pane" id="pane-ah-weight">
+    <div class="tool-split">
+      <div class="panel">
+        <p class="panel-title">Inputs — Anchor Handling : Weight Based</p>
+        <div class="error-banner" id="err-ah-weight"></div>
+        <div class="field"><label>Chain Diameter (d) [mm]</label><input type="number" id="ahw-chain_dia" step="1" min="64" value="76"></div>
+        <div class="field"><label>Total Chain Length (L) [m]</label><input type="number" id="ahw-chain_length" step="0.5" min="1" value="440"></div>
+        <div class="field">
+          <label>Packing Nature</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="ahw-packing" value="0.5" checked><span>Tight (0.5 m³/t)</span></label>
+            <label class="radio-opt"><input type="radio" name="ahw-packing" value="0.7"><span>Loose (0.7 m³/t)</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Locker Shape</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="ahw-shape" value="Circle" checked onchange="toggleShape('ahw')"><span>Circle</span></label>
+            <label class="radio-opt"><input type="radio" name="ahw-shape" value="Rectangle" onchange="toggleShape('ahw')"><span>Rectangle</span></label>
+          </div>
+        </div>
+        <div class="field" id="ahw-dia-field">
+          <label>Locker Diameter (D) [m]</label>
+          <input type="number" id="ahw-locker_dia" step="0.01" min="0.1" value="2.50">
+        </div>
+        <div class="field" id="ahw-len-field">
+          <label>Locker Length [m]</label>
+          <input type="number" id="ahw-locker_length" step="0.01" min="0.1" value="3.00" disabled>
+        </div>
+        <div class="field" id="ahw-brd-field">
+          <label>Locker Breadth [m]</label>
+          <input type="number" id="ahw-locker_breadth" step="0.01" min="0.1" value="2.00" disabled>
+        </div>
+        <label class="check-row"><input type="checkbox" id="ahw-taper"><span>30° Taper Included</span></label>
+        <label class="check-row"><input type="checkbox" id="ahw-mudbox"><span>Mudbox Included</span></label>
+        <div class="action-row"><button class="btn-calc" onclick="calculate('ah-weight')">Calculate</button></div>
+        <div class="export-row" id="exp-ah-weight">
+          <button class="btn-export" onclick="exportFile('ah-weight','excel')">⬇ Export Excel</button>
+          <button class="btn-export" onclick="exportWordReport('ah-weight')">⬇ Export Word</button>
+          <button class="btn-export" onclick="exportFile('ah-weight','pdf')">⬇ Export PDF</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="empty-state" id="empty-ah-weight"><div class="empty-icon">⚓</div>Enter inputs and hit Calculate<br>to see results here.</div>
+        <div id="res-ah-weight" style="display:none;">
+          <p class="panel-title">Results — AH Weight Based</p>
+          <div class="result-primary"><p class="result-primary-label">Required Locker Volume</p><span class="result-primary-value" id="ahw-volume">—</span><span class="result-primary-unit"> m³</span></div>
+          <div class="results-grid">
+            <div class="result-cell"><span class="result-cell-label">Required Locker Height</span><span class="result-cell-value" id="ahw-height">—</span><span class="result-cell-unit"> m</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end tool-wrapper -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+  // ── Tab switching
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('pane-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── COSCO Round: live locker diameter preview from slider
+  function updateCoscoDia() {
+    const d     = parseFloat(document.getElementById('cr-chain_dia').value) || 0;
+    const ratio = parseFloat(document.getElementById('cr-ratio').value);
+    document.getElementById('cr-ratio-val').textContent = ratio;
+    const dia = (d * ratio / 1000).toFixed(3);
+    document.getElementById('cr-dia-hint').textContent = `Locker diameter D = ${dia} m`;
+  }
+
+  // ── AH shape toggle: enable/disable fields based on shape selection
+  function toggleShape(prefix) {
+    const shape = document.querySelector(`input[name="${prefix}-shape"]:checked`).value;
+    const isCircle = shape === 'Circle';
+    document.getElementById(`${prefix}-locker_dia`).disabled    = !isCircle;
+    document.getElementById(`${prefix}-locker_length`).disabled  = isCircle;
+    document.getElementById(`${prefix}-locker_breadth`).disabled = isCircle;
+  }
+
+  // ── Gather inputs per method — returns plain object ready to POST as JSON
+  function gatherInputs(method) {
+    const g = id => document.getElementById(id);
+    const chk = id => g(id).checked ? 'Yes' : 'No';
+    const radio = name => document.querySelector(`input[name="${name}"]:checked`).value;
+
+    switch (method) {
+      case 'ihc':
+        return {
+          chain_dia:    g('ihc-chain_dia').value,
+          chain_length: g('ihc-chain_length').value,
+          locker_dia:   g('ihc-locker_dia').value,
+          taper:        chk('ihc-taper'),
+          mudbox:       chk('ihc-mudbox'),
+        };
+      case 'cosco-round':
+        return {
+          chain_dia:    g('cr-chain_dia').value,
+          ratio:        g('cr-ratio').value,
+          chain_length: g('cr-chain_length').value,
+          taper:        chk('cr-taper'),
+          mudbox:       chk('cr-mudbox'),
+        };
+      case 'cosco-rect':
+        return {
+          chain_dia:      g('crect-chain_dia').value,
+          chain_length:   g('crect-chain_length').value,
+          locker_length:  g('crect-locker_length').value,
+          locker_breadth: g('crect-locker_breadth').value,
+          k1:             g('crect-k1').value,
+          taper:          chk('crect-taper'),
+          mudbox:         chk('crect-mudbox'),
+        };
+      case 'ah-length': {
+        const shape = radio('ahl-shape');
+        return {
+          chain_dia:      g('ahl-chain_dia').value,
+          chain_length:   g('ahl-chain_length').value,
+          shape,
+          locker_dia:     shape === 'Circle'    ? g('ahl-locker_dia').value    : '0',
+          locker_length:  shape === 'Rectangle' ? g('ahl-locker_length').value  : '0',
+          locker_breadth: shape === 'Rectangle' ? g('ahl-locker_breadth').value : '0',
+          taper:          chk('ahl-taper'),
+          mudbox:         chk('ahl-mudbox'),
+        };
+      }
+      case 'ah-weight': {
+        const shape = radio('ahw-shape');
+        return {
+          chain_dia:      g('ahw-chain_dia').value,
+          chain_length:   g('ahw-chain_length').value,
+          packing:        radio('ahw-packing'),
+          shape,
+          locker_dia:     shape === 'Circle'    ? g('ahw-locker_dia').value    : '0',
+          locker_length:  shape === 'Rectangle' ? g('ahw-locker_length').value  : '0',
+          locker_breadth: shape === 'Rectangle' ? g('ahw-locker_breadth').value : '0',
+          taper:          chk('ahw-taper'),
+          mudbox:         chk('ahw-mudbox'),
+        };
+      }
+    }
+  }
+  // Add this helper controller to extra_js block alongside your calculate methods
+function exportWordReport(method) {
+  const inputs = gatherInputs(method);
+  const form = document.createElement('form');
+  form.method = 'POST';
+  
+  //  Updated to match direct backend endpoint routing
+  form.action = `/api/${method}/export-word`;
+
+  Object.entries(inputs).forEach(([key, val]) => {
+    const hiddenField = document.createElement('input');
+    hiddenField.type = 'hidden';
+    hiddenField.name = key;
+    hiddenField.value = val;
+    form.appendChild(hiddenField);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+}
+
+  // ── Populate results panel per method
+  function showResults(method, r) {
+    const g   = id => document.getElementById(id);
+    const fmt = v  => (v !== null && v !== undefined) ? parseFloat(v).toFixed(3) : '—';
+
+    g('empty-' + method).style.display = 'none';
+    g('res-'   + method).style.display = 'block';
+    g('exp-'   + method).classList.add('visible');
+
+    switch (method) {
+      case 'ihc':
+        g('ihc-volume').textContent = fmt(r.volume);
+        g('ihc-height').textContent = fmt(r.height);
+        // D/H computed client-side from input and returned height
+        const dh = parseFloat(g('ihc-locker_dia').value) / parseFloat(r.height);
+        g('ihc-dh').textContent = isFinite(dh) ? dh.toFixed(3) : '—';
+        setBadge('ihc-badge', 'ihc-badge-text', r.dh_text);
+        break;
+      case 'cosco-round':
+        g('cr-volume').textContent = fmt(r.volume);
+        g('cr-height').textContent = fmt(r.height);
+        break;
+      case 'cosco-rect':
+        g('crect-volume').textContent = fmt(r.volume);
+        g('crect-height').textContent = fmt(r.height);
+        // B/H ratio — B is the smaller of length/breadth
+        const B = Math.min(
+          parseFloat(g('crect-locker_length').value),
+          parseFloat(g('crect-locker_breadth').value)
+        );
+        const bh = B / parseFloat(r.height);
+        g('crect-bh').textContent = isFinite(bh) ? bh.toFixed(3) : '—';
+        setBadge('crect-badge', 'crect-badge-text', r.bh_text);
+        break;
+      case 'ah-length':
+        g('ahl-volume').textContent = fmt(r.volume);
+        g('ahl-height').textContent = fmt(r.height);
+        break;
+      case 'ah-weight':
+        g('ahw-volume').textContent = fmt(r.volume);
+        g('ahw-height').textContent = fmt(r.height);
+        break;
+    }
+  }
+
+  function setBadge(badgeId, textId, val) {
+    const badge = document.getElementById(badgeId);
+    const text  = document.getElementById(textId);
+    if (val && val.toLowerCase().startsWith('fail')) {
+      badge.className = 'accept-badge fail';
+      text.textContent = '✗ ' + val;
+    } else {
+      badge.className = 'accept-badge pass';
+      text.textContent = '✓ ' + (val || 'Acceptable');
+    }
+  }
+
+  // ── Main calculate function
+  // ── Main calculate function
+  // ── Main calculate function (Fixed to map directly to server routing)
+  async function calculate(method) {
+    const inputs = gatherInputs(method);
+    const errEl  = document.getElementById('err-' + method);
+    errEl.style.display = 'none';
+
+    try {
+      const response = await fetch(`/api/${method}/calculate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(inputs)
+      });
+      const data = await response.json();
+      if (!data.ok) {
+        errEl.textContent = 'Error: ' + data.error;
+        errEl.style.display = 'block';
+        return;
+      }
+      showResults(method, data.results);
+    } catch (err) {
+      errEl.textContent = 'Network error — could not reach server.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  // ── Unified Word Document Downloader Handler
+  function exportWordReport(method) {
+    const inputs = gatherInputs(method);
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/api/${method}/export-word`;
+
+    Object.entries(inputs).forEach(([key, val]) => {
+      const hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = key;
+      hiddenField.value = val;
+      form.appendChild(hiddenField);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  }
+
+  // ── Unified Excel Spreadsheet and Corporate PDF Downloader Handler
+  function exportFile(method, format) {
+    const inputs = gatherInputs(method);
+    const form   = document.createElement('form');
+    form.method  = 'POST';
+    
+    if (format === 'pdf') {
+      form.action = `/api/${method}/export-pdf`;
+    } else {
+      form.action = `/api/${method}/export-excel`;
+    }
+    
+    Object.entries(inputs).forEach(([key, val]) => {
+      const f = document.createElement('input');
+      f.type = 'hidden'; 
+      f.name = key; 
+      f.value = val;
+      form.appendChild(f);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  }
+
+  // ── Populate results panel per method
+  function showResults(method, r) {
+    const g   = id => document.getElementById(id);
+    const fmt = v  => (v !== null && v !== undefined) ? parseFloat(v).toFixed(3) : '—';
+
+    g('empty-' + method).style.display = 'none';
+    g('res-'   + method).style.display = 'block';
+    g('exp-'   + method).classList.add('visible');
+
+    switch (method) {
+      case 'ihc':
+        g('ihc-volume').textContent = fmt(r.volume);
+        g('ihc-height').textContent = fmt(r.height);
+        const dh = parseFloat(g('ihc-locker_dia').value) / parseFloat(r.height);
+        g('ihc-dh').textContent = isFinite(dh) ? dh.toFixed(3) : '—';
+        setBadge('ihc-badge', 'ihc-badge-text', r.dh_text);
+        break;
+      case 'cosco-round':
+        g('cr-volume').textContent = fmt(r.volume);
+        g('cr-height').textContent = fmt(r.height);
+        break;
+      case 'cosco-rect':
+        g('crect-volume').textContent = fmt(r.volume);
+        g('crect-height').textContent = fmt(r.height);
+        const B = Math.min(
+          parseFloat(g('crect-locker_length').value),
+          parseFloat(g('crect-locker_breadth').value)
+        );
+        const bh = B / parseFloat(r.height);
+        g('crect-bh').textContent = isFinite(bh) ? bh.toFixed(3) : '—';
+        setBadge('crect-badge', 'crect-badge-text', r.bh_text);
+        break;
+      case 'ah-length':
+        g('ahl-volume').textContent = fmt(r.volume);
+        g('ahl-height').textContent = fmt(r.height);
+        break;
+      case 'ah-weight':
+        g('ahw-volume').textContent = fmt(r.volume);
+        g('ahw-height').textContent = fmt(r.height);
+        break;
+    }
+  }
+
+  function setBadge(badgeId, textId, val) {
+    const badge = document.getElementById(badgeId);
+    const text  = document.getElementById(textId);
+    if (val && val.toLowerCase().startsWith('fail')) {
+      badge.className = 'accept-badge fail';
+      text.textContent = '✗ ' + val;
+    } else {
+      badge.className = 'accept-badge pass';
+      text.textContent = '✓ ' + (val || 'Acceptable');
+    }
+  }
+
+  // Init COSCO Round hint on load
+  updateCoscoDia();
+
+</script>
+{% endblock %}

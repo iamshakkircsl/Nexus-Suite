@@ -1,0 +1,1495 @@
+{% extends "base.html" %}
+{% set active_pillar = 'st' %}
+
+{% block title %}Section Modulus - CSL Design Portal{% endblock %}
+
+{% block extra_style %}
+<style>
+  :root { --col: var(--st-col); }
+
+  .tool-wrapper {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 24px;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .tool-header {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--steel);
+  }
+  .tool-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .tool-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.8rem;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    line-height: 1;
+  }
+  .tool-title span { color: var(--st-col); }
+  .tool-desc {
+    color: var(--fog);
+    font-size: 0.9rem;
+    margin-top: 6px;
+    max-width: 660px;
+    line-height: 1.6;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--steel);
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 18px;
+    margin-bottom: -1px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn:hover { color: var(--fog); }
+  .tab-btn.active {
+    color: var(--st-col);
+    border-bottom-color: var(--st-col);
+  }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  .tool-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .left-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .panel {
+    background: var(--deep);
+    border: 1px solid var(--steel);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--steel);
+  }
+
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .profile-btn {
+    background: transparent;
+    border: 1px solid var(--steel);
+    border-radius: 4px;
+    padding: 10px;
+    min-height: 72px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .profile-btn:hover {
+    border-color: var(--st-col);
+    background: rgba(180, 83, 9, 0.05);
+  }
+  .profile-btn.active {
+    border-color: var(--st-col);
+    background: rgba(180, 83, 9, 0.09);
+  }
+  .profile-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+  }
+  .profile-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.67rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fog);
+  }
+  .profile-btn.active .profile-name { color: var(--st-col); }
+
+  .profile-fields-group { display: none; }
+  .profile-fields-group.active { display: block; }
+  .fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--st-col);
+    margin-bottom: 6px;
+  }
+  .field input[type="number"],
+  .field select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--navy);
+    border: 1px solid var(--steel);
+    color: var(--white);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .field input[type="number"]:focus,
+  .field select:focus {
+    border-color: var(--st-col);
+  }
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+    margin-bottom: 14px;
+    cursor: pointer;
+  }
+  .check-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--st-col);
+    cursor: pointer;
+  }
+  .check-row span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fog);
+  }
+  .field-divider {
+    height: 1px;
+    background: var(--steel);
+    margin: 18px 0 16px;
+  }
+  .field-section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+  .btn-calc {
+    padding: 11px 22px;
+    background: var(--st-col);
+    color: #ffffff;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    transition: background 0.2s;
+  }
+  .btn-calc:hover { background: var(--white); }
+  .btn-export {
+    padding: 11px 18px;
+    background: transparent;
+    border: 1px solid var(--steel);
+    color: var(--fog);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-export:hover {
+    border-color: var(--st-col);
+    color: var(--white);
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-align: center;
+    line-height: 1.8;
+  }
+  .empty-icon {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    line-height: 1;
+    margin-bottom: 12px;
+    opacity: 0.45;
+  }
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .result-primary {
+    background: var(--navy);
+    border-left: 4px solid var(--st-col);
+    padding: 16px 20px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .result-primary-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fog);
+    margin-bottom: 4px;
+  }
+  .result-primary-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.6rem;
+    line-height: 1;
+    color: var(--white);
+  }
+  .result-primary-unit {
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    color: var(--dim);
+  }
+  .result-cell {
+    background: var(--navy);
+    border: 1px solid var(--steel);
+    border-radius: 4px;
+    padding: 10px 12px;
+  }
+  .result-cell-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .result-cell-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    color: var(--white);
+    font-weight: 600;
+  }
+  .result-cell-unit {
+    font-size: 0.78rem;
+    color: var(--dim);
+  }
+
+  .diagram-panel {
+    position: sticky;
+    top: 96px;
+  }
+  .diagram-box {
+    min-height: 520px;
+    background: var(--navy);
+    border: 1px solid var(--steel);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .diagram-box svg {
+    width: 100% !important;
+    max-width: 380px !important;
+    height: auto !important;
+  }
+  .diagram-caption {
+    margin-top: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .coming-soon-toast {
+    position: fixed;
+    top: 82px;
+    right: 24px;
+    max-width: 320px;
+    background: var(--deep);
+    border: 1px solid var(--steel);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--fog);
+    z-index: 300;
+    display: none;
+    animation: fadeUp 0.3s ease;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  }
+  .coming-soon-toast.show { display: block; }
+  .toast-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    color: var(--st-col);
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  @media (max-width: 980px) {
+    .tool-split { grid-template-columns: 1fr; }
+    .diagram-panel { position: static; }
+    .diagram-box { min-height: 360px; }
+  }
+  @media (max-width: 620px) {
+    .tool-wrapper { padding: 0 16px; }
+    .profile-grid,
+    .fields-grid,
+    .results-grid {
+      grid-template-columns: 1fr;
+    }
+    .tool-title { font-size: 3rem; }
+  }
+  @media print {
+    /* Hide all browser-view UI suite containers completely */
+    .back-link, .tab-bar, .action-row, nav, header, .coming-soon-toast, 
+    .tool-header, .left-stack, .diagram-panel, #pane-advanced {
+      display: none !important;
+    }
+    
+    html, body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: 'Arial', sans-serif !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 210mm !important;
+      height: auto !important;
+    }
+
+    .csl-print-report {
+      display: block !important;
+      width: 210mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Strict A4 standard size encapsulation blocks to isolate pages precisely */
+    .print-page {
+      /* REMOVED 'page-break-before: always' from here to stop the 1st blank page */
+      page-break-after: always !important;
+      page-break-inside: avoid !important;
+      position: relative !important;
+      box-sizing: border-box !important;
+      width: 210mm !important;
+      height: 278mm !important; /* Slightly optimized height to stay well within boundaries */
+      padding: 15mm 15mm !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+    }
+    
+    /* Force page-break properties strictly between consecutive blocks */
+    .print-page + .print-page {
+      page-break-before: always !important;
+    }
+    
+    /* Absolute termination at the tail-end to prevent the final blank page */
+    .print-page:last-child {
+      page-break-after: avoid !important;
+    }
+
+    /* Structured Corporate Headers */
+    .page-header-corporate {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      border-bottom: 2px solid #5b9bd5 !important;
+      padding-bottom: 8px !important;
+      margin-bottom: 20px !important;
+      width: 100% !important;
+    }
+    
+    .logo-container-flex {
+      display: flex !important;
+      align-items: center !important;
+      gap: 15px !important;
+    }
+    .csl-official-logo-img {
+      width: 55px !important;
+      height: 55px !important;
+      object-fit: contain !important;
+    }
+    .csl-official-logo-img-large {
+      width: 75px !important;
+      height: 75px !important;
+      object-fit: contain !important;
+    }
+    .csl-text-block h1 {
+      font-size: 20px !important;
+      font-weight: bold !important;
+      color: #1a5276 !important;
+      margin: 0 !important;
+    }
+    .csl-text-block p {
+      font-size: 9.5px !important;
+      text-transform: uppercase !important;
+      color: #7f8c8d !important;
+      margin: 2px 0 0 0 !important;
+      font-weight: bold !important;
+      letter-spacing: 0.5px;
+    }
+    .header-meta-info {
+      font-size: 10.5px !important;
+      color: #333333 !important;
+      text-align: right !important;
+      line-height: 1.4 !important;
+    }
+
+    /* Cover Styling Elements */
+    .cover-container {
+      position: relative !important;
+      height: 100% !important;
+      width: 100% !important;
+    }
+    .cover-top-bar {
+      border-top: 4px solid #2b78c5 !important;
+      padding-top: 12px !important;
+    }
+    .cover-left-stripe {
+      position: absolute !important;
+      left: -15mm !important;
+      top: -15mm !important;
+      bottom: -15mm !important;
+      width: 8px !important;
+      background-color: #2b78c5 !important;
+    }
+    .cover-project-title {
+      font-size: 28px !important;
+      font-weight: bold !important;
+      text-align: center !important;
+      margin-top: 70px !important;
+      color: #111111 !important;
+    }
+    .cover-divider-line {
+      width: 100% !important;
+      height: 2px !important;
+      background-color: #5b9bd5 !important;
+      margin: 15px 0 !important;
+    }
+    .cover-image-placeholder {
+      border: 1px dashed #b4c6e7 !important;
+      height: 150px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 12px !important;
+      color: #7f8c8d !important;
+      background-color: #f8fafc !important;
+      margin: 30px auto !important;
+      width: 85% !important;
+    }
+    .cover-drawing-title {
+      font-size: 22px !important;
+      font-weight: bold !important;
+      text-align: center !important;
+      margin-top: 40px !important;
+      color: #222222 !important;
+    }
+    .cover-footer-notice {
+      position: absolute !important;
+      bottom: 5mm !important;
+      left: 0 !important;
+      right: 0 !important;
+      font-size: 10px !important;
+      line-height: 1.5 !important;
+      text-align: justify !important;
+      color: #444444 !important;
+      border-top: 1px solid #cccccc !important;
+      padding-top: 10px !important;
+    }
+
+    /* Grid Layout Tables */
+    .csl-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      margin-top: 10px !important;
+      margin-bottom: 15px !important;
+    }
+    .csl-table th, .csl-table td {
+      border: 1px solid #5b9bd5 !important;
+      padding: 8px 10px !important;
+      font-size: 12px !important;
+      color: #000000 !important;
+    }
+    .csl-table th {
+      background-color: #f2f7fc !important;
+      font-weight: bold;
+    }
+    
+    .blue-section-heading {
+      font-size: 16px !important;
+      font-weight: bold;
+      color: #2b78c5 !important;
+      margin-top: 5px !important;
+      margin-bottom: 12px !important;
+      border-bottom: 1px solid #5b9bd5 !important;
+      padding-bottom: 3px !important;
+    }
+    .report-sub-title {
+      font-size: 13px !important;
+      font-weight: bold;
+      margin-top: 18px !important;
+      margin-bottom: 8px !important;
+      color: #111111 !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tool-wrapper">
+
+  <div style="margin-bottom:20px;">
+    <a href="{{ url_for('structural') }}" class="back-link">&larr; Structural Engineering</a>
+  </div>
+
+  <div class="tool-header">
+    <p class="tool-eyebrow">ST &middot; Tool &middot; 001</p>
+    <h1 class="tool-title">Section <span>Modulus</span></h1>
+    <p class="tool-desc">Select a structural profile, enter the section dimensions, and review section modulus, centroid, moment of inertia, and area outputs once the calculation model is connected.</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('general', this)">General Shapes</button>
+    <button class="tab-btn" onclick="switchTab('advanced', this)">Advanced Cross Sections</button>
+  </div>
+
+  <div class="tab-pane active" id="pane-general">
+    <div class="tool-split">
+      <div class="left-stack">
+        <div class="panel">
+          <p class="panel-title">Inputs - General Shapes</p>
+
+          <div class="profile-grid">
+            <button class="profile-btn active" type="button" onclick="selectProfile('T', this)">
+              <svg class="profile-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="4" y="4" width="20" height="5" fill="#b45309" rx="1"/>
+                <rect x="11" y="9" width="6" height="15" fill="#b45309" rx="1"/>
+              </svg>
+              <span class="profile-name">T Section</span>
+            </button>
+
+            <button class="profile-btn" type="button" onclick="selectProfile('L', this)">
+              <svg class="profile-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="5" y="4" width="5" height="20" fill="#b45309" rx="1"/>
+                <rect x="5" y="4" width="18" height="5" fill="#b45309" rx="1"/>
+              </svg>
+              <span class="profile-name">L Angle</span>
+            </button>
+
+            <button class="profile-btn" type="button" onclick="selectProfile('I', this)">
+              <svg class="profile-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="4" y="4" width="20" height="4" fill="#b45309" rx="1"/>
+                <rect x="11" y="8" width="6" height="12" fill="#b45309" rx="1"/>
+                <rect x="4" y="20" width="20" height="4" fill="#b45309" rx="1"/>
+              </svg>
+              <span class="profile-name">I Beam</span>
+            </button>
+
+            <button class="profile-btn" type="button" onclick="selectProfile('C', this)">
+              <svg class="profile-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="5" y="4" width="18" height="4" fill="#b45309" rx="1"/>
+                <rect x="5" y="4" width="5" height="20" fill="#b45309" rx="1"/>
+                <rect x="5" y="20" width="18" height="4" fill="#b45309" rx="1"/>
+              </svg>
+              <span class="profile-name">C Channel</span>
+            </button>
+
+            <button class="profile-btn" type="button" onclick="selectProfile('FB', this)">
+              <svg class="profile-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="5" y="8" width="18" height="12" fill="#b45309" rx="1"/>
+              </svg>
+              <span class="profile-name">Flat Bar</span>
+            </button>
+
+            <button class="profile-btn" type="button" onclick="selectProfile('BF', this)">
+              <svg class="profile-icon" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <rect x="11" y="10" width="6" height="14" fill="#b45309" rx="1"/>
+                <ellipse cx="14" cy="9" rx="5" ry="5" fill="#b45309"/>
+              </svg>
+              <span class="profile-name">Bulb Flat</span>
+            </button>
+          </div>
+
+          <div id="fields_T" class="profile-fields-group active">
+            <div class="fields-grid">
+              <div class="field"><label>Web Height (h<sub>w</sub>) [mm]</label><input type="number" id="inp_T_hw" step="any" min="0.1" value="200"></div>
+              <div class="field"><label>Web Thickness (t<sub>w</sub>) [mm]</label><input type="number" id="inp_T_tw" step="any" min="0.1" value="10"></div>
+              <div class="field"><label>Flange Width (b<sub>f</sub>) [mm]</label><input type="number" id="inp_T_bf" step="any" min="0.1" value="100"></div>
+              <div class="field"><label>Flange Thickness (t<sub>f</sub>) [mm]</label><input type="number" id="inp_T_tf" step="any" min="0.1" value="14"></div>
+            </div>
+          </div>
+
+          <div id="fields_L" class="profile-fields-group">
+            <div class="fields-grid">
+              <div class="field"><label>Web Width (h<sub>w</sub>) [mm]</label><input type="number" id="inp_L_hw" step="any" min="0.1" value="150"></div>
+              <div class="field"><label>Web Thickness (t<sub>w</sub>) [mm]</label><input type="number" id="inp_L_tw" step="any" min="0.1" value="10"></div>
+              <div class="field"><label>Flange Width (b<sub>f</sub>) [mm]</label><input type="number" id="inp_L_bf" step="any" min="0.1" value="100"></div>
+              <div class="field"><label>Flange Thickness (t<sub>f</sub>) [mm]</label><input type="number" id="inp_L_tf" step="any" min="0.1" value="10"></div>
+            </div>
+          </div>
+
+          <div id="fields_I" class="profile-fields-group">
+            <div class="fields-grid">
+              <div class="field"><label>Web Height (h<sub>w</sub>) [mm]</label><input type="number" id="inp_I_hw" step="any" min="0.1" value="300"></div>
+              <div class="field"><label>Web Thickness (t<sub>w</sub>) [mm]</label><input type="number" id="inp_I_tw" step="any" min="0.1" value="10"></div>
+              <div class="field"><label>Flange Width (b<sub>f</sub>) [mm]</label><input type="number" id="inp_I_bf" step="any" min="0.1" value="150"></div>
+              <div class="field"><label>Flange Thickness (t<sub>f</sub>) [mm]</label><input type="number" id="inp_I_tf" step="any" min="0.1" value="16"></div>
+            </div>
+          </div>
+
+          <div id="fields_C" class="profile-fields-group">
+            <div class="fields-grid">
+              <div class="field"><label>Web Height (h<sub>w</sub>) [mm]</label><input type="number" id="inp_C_hw" step="any" min="0.1" value="200"></div>
+              <div class="field"><label>Web Thickness (t<sub>w</sub>) [mm]</label><input type="number" id="inp_C_tw" step="any" min="0.1" value="10"></div>
+              <div class="field"><label>Flange Width (b<sub>f</sub>) [mm]</label><input type="number" id="inp_C_bf" step="any" min="0.1" value="75"></div>
+              <div class="field"><label>Flange Thickness (t<sub>f</sub>) [mm]</label><input type="number" id="inp_C_tf" step="any" min="0.1" value="12"></div>
+            </div>
+          </div>
+
+          <div id="fields_FB" class="profile-fields-group">
+            <div class="fields-grid">
+              <div class="field"><label>Bar Height (h) [mm]</label><input type="number" id="inp_FB_h" step="any" min="0.1" value="100"></div>
+              <div class="field"><label>Bar Thickness (t) [mm]</label><input type="number" id="inp_FB_t" step="any" min="0.1" value="12"></div>
+            </div>
+          </div>
+
+          <div id="fields_BF" class="profile-fields-group">
+            <div class="field">
+              <label>Standard Bulb Size</label>
+              <select id="inp_bulb_size" onchange="toggleBulbCustomFields()">
+                <option value="hp80">HP 80</option>
+                <option value="hp100">HP 100</option>
+                <option value="hp120">HP 120</option>
+                <option value="others">Others (enter manually)</option>
+              </select>
+            </div>
+            <div id="bulbCustomFields" style="display:none;">
+              <div class="fields-grid">
+                <div class="field"><label>Web Height (h<sub>w</sub>) [mm]</label><input type="number" id="inp_BF_hw" step="any" min="0.1" value="120"></div>
+                <div class="field"><label>Web Thickness (t<sub>w</sub>) [mm]</label><input type="number" id="inp_BF_tw" step="any" min="0.1" value="8"></div>
+                <div class="field"><label>Bulb Diameter (d<sub>b</sub>) [mm]</label><input type="number" id="inp_BF_db" step="any" min="0.1" value="28"></div>
+                <div class="field"><label>Bulb Thickness (t<sub>b</sub>) [mm]</label><input type="number" id="inp_BF_tb" step="any" min="0.1" value="12"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-divider"></div>
+          <label class="check-row" id="chk_base_row">
+            <input type="checkbox" id="chk_base" onchange="toggleBasePlate()">
+            <span>Include attached hull/base plate</span>
+          </label>
+          <div id="basePlateSection" style="display:none;">
+            <p class="field-section-label">Attached Plate</p>
+            <div class="fields-grid">
+              <div class="field"><label>Plate Breadth (b<sub>p</sub>) [mm]</label><input type="number" id="inp_bp" step="any" min="0.1" value="200"></div>
+              <div class="field"><label>Plate Thickness (t<sub>p</sub>) [mm]</label><input type="number" id="inp_tp" step="any" min="0.1" value="12"></div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn-calc" type="button" onclick="executeCalculation()">Calculate</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">Results and Exports</p>
+          <div class="empty-state" id="resultsEmpty">
+            <div class="empty-icon">Z</div>
+            Enter dimensions and run Calculate<br>to populate section properties.
+          </div>
+          <div id="resultsPreview" style="display:none;">
+            <div class="result-primary">
+              <p class="result-primary-label">Section Modulus (Bottom)</p>
+              <span class="result-primary-value" id="res_Z">--</span>
+              <span class="result-primary-unit"> cm³</span>
+            </div>
+            <div class="results-grid">
+              <div class="result-cell"><span class="result-cell-label">Area</span><span class="result-cell-value" id="res_A">--</span><span class="result-cell-unit"> cm²</span></div>
+              <div class="result-cell"><span class="result-cell-label">Centroid (ȳ)</span><span class="result-cell-value" id="res_ybar">--</span><span class="result-cell-unit"> mm</span></div>
+              <div class="result-cell"><span class="result-cell-label">Moment of Inertia</span><span class="result-cell-value" id="res_I">--</span><span class="result-cell-unit"> cm⁴</span></div>
+              <div class="result-cell"><span class="result-cell-label">Selected Profile</span><span class="result-cell-value" id="res_profile">T</span></div>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-export" type="button" onclick="generateExcelReport()">Export Excel</button>
+            <button class="btn-export" type="button" onclick="generateWordReport()">Export Word</button>
+            <button class="btn-export" type="button" onclick="window.print()">Export PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel diagram-panel">
+        <p class="panel-title">Profile Diagram Reference</p>
+        <div class="diagram-box" id="diagramBox"></div>
+        <p class="diagram-caption" id="diagramCaption">T Section reference diagram</p>
+      </div>
+    </div>
+  </div> <div class="tab-pane" id="pane-advanced style="display: none;">
+    <div class="tool-split">
+      <div class="left-stack">
+        <div class="panel">
+          <p class="panel-title">Advanced Section Coordinate Modeler</p>
+          <p class="tool-desc" style="margin-bottom:15px; color: var(--fog);">Input your coordinates sequentially in a clockwise or counter-clockwise loop to draft complex profile shapes.</p>
+          
+          <table style="width:100%; font-family:'DM Mono', monospace; color:var(--white); margin-bottom:15px;" id="coordTable">
+            <thead>
+              <tr style="color:var(--st-col); font-size:0.7rem; text-transform:uppercase; text-align: left;">
+                <th style="padding: 8px 4px;">Node</th>
+                <th style="padding: 8px 4px;">X (mm)</th>
+                <th style="padding: 8px 4px;">Y (mm)</th>
+                <th style="padding: 8px 4px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="coordTableBody">
+              <tr>
+                <td>1</td>
+                <td><input type="number" class="coord-x" value="0" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+                <td><input type="number" class="coord-y" value="0" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td><input type="number" class="coord-x" value="0" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+                <td><input type="number" class="coord-y" value="150" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><input type="number" class="coord-x" value="100" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+                <td><input type="number" class="coord-y" value="150" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td><input type="number" class="coord-x" value="100" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+                <td><input type="number" class="coord-y" value="0" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="action-row">
+            <button class="btn-export" type="button" onclick="addCoordinateRow()">+ Add Node</button>
+            <button class="btn-calc" type="button" onclick="executeAdvancedCalculation()">Calculate Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="panel-title">Advanced Results</p>
+        <div class="result-primary">
+          <p class="result-primary-label">Section Modulus (Bottom)</p>
+          <span class="result-primary-value" id="adv_res_Z">--</span>
+          <span class="result-primary-unit"> cm³</span>
+        </div>
+        <div class="results-grid">
+          <div class="result-cell"><span class="result-cell-label">Area</span><span class="result-cell-value" id="adv_res_A">--</span><span class="result-cell-unit"> cm²</span></div>
+          <div class="result-cell"><span class="result-cell-label">Centroid (ȳ)</span><span class="result-cell-value" id="adv_res_ybar">--</span><span class="result-cell-unit"> mm</span></div>
+          <div class="result-cell"><span class="result-cell-label">Moment of Inertia</span><span class="result-cell-value" id="adv_res_I">--</span><span class="result-cell-unit"> cm⁴</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<div class="coming-soon-toast" id="comingSoonToast">
+  <div class="toast-title">Coming Soon</div>
+  <div id="toastMessage">This feature is under development.</div>
+</div>
+<div class="csl-print-report" style="display: none;">
+
+  <div class="print-page">
+    <div class="cover-container">
+      <div class="cover-left-stripe"></div>
+      
+      <div class="cover-top-bar">
+        <div class="logo-container-flex">
+          <img class="csl-official-logo-img-large" src="/static/images/csl_logo.png" alt="Cochin Shipyard Logo">
+          <div class="csl-text-block">
+            <h1>COCHIN SHIPYARD LTD.</h1>
+            <p>A Govt. of India Enterprise</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="cover-project-title">NEXUS: MARINE DESIGN SUITE</div>
+      <div class="cover-divider-line"></div>
+      <div class="cover-image-placeholder">- Insert Vessel Picture -</div>
+      <div class="cover-drawing-title">SECTION PROPERTIES CALCULATION REPORT</div>
+      
+      <table class="csl-table" style="position: absolute; bottom: 0; left: 0; right: 0; margin-bottom: 0;">
+        <tr>
+          <td style="font-weight: bold; width: 18%;">Drg. No.</td>
+          <td style="width: 32%;">CSL-ST-MOD-001</td>
+          <td style="font-weight: bold; width: 18%;">Department</td>
+          <td style="width: 32%;">Basic Design</td>
+        </tr>
+        <tr>
+          <td style="font-weight: bold;">Project</td>
+          <td id="print_cover_project">NEXUS: MARINE DESIGN SUITE</td>
+          <td style="font-weight: bold;">Document Type</td>
+          <td>Calculation Report</td>
+        </tr>
+        <tr>
+          <td style="font-weight: bold;">Yard No.</td>
+          <td>BY-1002</td>
+          <td style="font-weight: bold;">Owner</td>
+          <td>Technical Records Section</td>
+        </tr>
+        <tr>
+          <td style="font-weight: bold;">Class</td>
+          <td>IRS / DNV GL Dual Class</td>
+          <td style="font-weight: bold;">Pages</td>
+          <td id="print_date_cover">03-06-2026</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="print-page">
+    <div class="page-header-corporate">
+      <div class="logo-container-flex">
+        <img class="csl-official-logo-img" src="/static/images/csl_logo.png" alt="Cochin Shipyard Logo">
+        <div class="csl-text-block">
+          <h1 style="font-size: 15px;">COCHIN SHIPYARD LTD.</h1>
+        </div>
+      </div>
+      <div class="header-meta-info">
+        <strong>Doc No:</strong> CSL-ST-MOD-001<br>
+        <strong>Rev:</strong> 0 / <strong>Date:</strong> <span class="live-date-stub">03-06-2026</span>
+      </div>
+    </div>
+    
+    <div class="blue-section-heading" style="font-size: 15px; border: none; padding: 0;">REVISION CONTROL SHEET</div>
+    <p style="font-size: 11px; color: #555; margin-bottom: 15px;">Project No.- Suite Records</p>
+    
+    <table class="csl-table">
+      <thead>
+        <tr>
+          <th style="width: 10%;">S. No</th>
+          <th style="width: 15%;">Revision</th>
+          <th style="width: 20%;">Date</th>
+          <th style="width:35%;">Description</th>
+          <th style="width: 20%;">Approved By</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1.</td>
+          <td>0</td>
+          <td class="live-date-stub">03-06-2026</td>
+          <td>Issued for verification records</td>
+          <td>Basic Design Dept</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top: 50px; border: 1px solid #5b9bd5; padding: 12px; background-color: #f8fafc;">
+      <div style="font-weight: bold; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; color: #1f4e79;">Disclaimer</div>
+      <p style="font-size: 10.5px; line-height: 1.5; margin: 0; text-align: justify; color: #444444;">
+        The information and results of calculations included in this report are preliminary only. The results and calculations are to be checked and confirmed during award of contract and prior to construction of the vessel.
+      </p>
+    </div>
+  </div>
+
+  <div class="print-page">
+    <div class="page-header-corporate">
+      <div class="logo-container-flex">
+        <img class="csl-official-logo-img" src="/static/images/csl_logo.png" alt="Cochin Shipyard Logo">
+        <div class="csl-text-block">
+          <h1 style="font-size: 15px;">COCHIN SHIPYARD LTD.</h1>
+        </div>
+      </div>
+      <div class="header-meta-info">
+        <strong>Doc No:</strong> CSL-ST-MOD-001<br>
+        <strong>Rev:</strong> 0 / <strong>Date:</strong> <span class="live-date-stub">03-06-2026</span>
+      </div>
+    </div>
+    
+    <div class="blue-section-heading" style="font-size: 15px; border: none; padding: 0;">TABLE OF CONTENTS</div>
+    <p style="font-size: 11px; color: #555; margin-bottom: 15px;">Project No.- Suite Records</p>
+    
+    <table class="csl-table">
+      <thead>
+        <tr>
+          <th style="width: 15%;">Section</th>
+          <th style="width: 70%;">Title Description</th>
+          <th style="width: 15%;">Page Ref</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight: bold;">1</td>
+          <td style="font-weight: bold;">SECTION MODULUS ANALYSIS</td>
+          <td style="text-align: right; font-weight: bold;">1-1</td>
+        </tr>
+        <tr>
+          <td style="padding-left: 20px;">1.1</td>
+          <td>Input Dimensional Data Configuration</td>
+          <td style="text-align: right;">1-1</td>
+        </tr>
+        <tr>
+          <td style="padding-left: 20px;">1.2</td>
+          <td>Calculated Geometrical Results Matrix</td>
+          <td style="text-align: right;">1-1</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="print-page">
+    <div class="page-header-corporate">
+      <div class="logo-container-flex">
+        <img class="csl-official-logo-img" src="/static/images/csl_logo.png" alt="Cochin Shipyard Logo">
+        <div class="csl-text-block">
+          <h1 style="font-size: 15px;">COCHIN SHIPYARD LTD.</h1>
+        </div>
+      </div>
+      <div class="header-meta-info">
+        <strong>Doc No:</strong> CSL-ST-MOD-001<br>
+        <strong>Rev:</strong> 0 / <strong>Date:</strong> <span class="live-date-stub">03-06-2026</span>
+      </div>
+    </div>
+    
+    <div class="blue-section-heading">1 SECTION MODULUS SIZING</div>
+    <p style="font-size:11px; color: #555; margin-bottom: 10px;">Methodology: Core Analytical Parallel Axis Evaluation Engines (CSL Standard Suite)</p>
+    <p style="font-size:11px; margin-bottom: 12px;">This report records inputs and computed results generated by the CSL Design Portal.</p>
+
+    <div class="report-sub-title">1.1 Input Data</div>
+    <table class="csl-table">
+      <thead>
+        <tr>
+          <th style="width: 60%;">INPUTS Parameter Variables</th>
+          <th style="width: 40%;">Engineered Configuration Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Selected Profile Type</td>
+          <td id="print_in_profile" style="font-weight: bold;">T Section</td>
+        </tr>
+        <tr>
+          <td>Web Height (hw) / Bar Height (h)</td>
+          <td id="print_in_hw">-- mm</td>
+        </tr>
+        <tr>
+          <td>Web Thickness (tw) / Bar Thickness (t)</td>
+          <td id="print_in_tw">-- mm</td>
+        </tr>
+        <tr>
+          <td>Flange Width (bf)</td>
+          <td id="print_in_bf">-- mm</td>
+        </tr>
+        <tr>
+          <td>Flange Thickness (tf)</td>
+          <td id="print_in_tf">-- mm</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="report-sub-title">1.2 Calculated Results</div>
+    <table class="csl-table">
+      <thead>
+        <tr>
+          <th style="width: 60%;">RESULTS Technical Nomenclature</th>
+          <th style="width: 40%;">Computed Output Property Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight: bold;">Section Modulus (Bottom)</td>
+          <td id="print_res_Z" style="font-weight: bold; color: #2b78c5; font-size: 13px;">--</td>
+        </tr>
+        <tr>
+          <td>Total Cross-Sectional Area</td>
+          <td id="print_res_A">--</td>
+        </tr>
+        <tr>
+          <td>Centroid Vertical Position (y-bar)</td>
+          <td id="print_res_ybar">--</td>
+        </tr>
+        <tr>
+          <td>Moment of Inertia (Ix)</td>
+          <td id="print_res_I">--</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="position: absolute; bottom: 5mm; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10.5px; color: #555; border-top: 1px solid #5b9bd5; padding-top: 6px;">
+      <span>Project No.- Suite Generation</span>
+      <span>Page 1-1</span>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const PROFILES = {
+    T:  { code: 'T',  label: 'T Section',  hasBase: true },
+    L:  { code: 'L',  label: 'L Angle',    hasBase: true },
+    I:  { code: 'I',  label: 'I Beam',     hasBase: false },
+    C:  { code: 'C',  label: 'C Channel',  hasBase: false },
+    FB: { code: 'FB', label: 'Flat Bar',   hasBase: true },
+    BF: { code: 'BF', label: 'Bulb Flat',  hasBase: true }
+  };
+
+  let currentProfile = 'T';
+  let toastTimer = null;
+  const cachedSVGData = {};
+
+  function switchTab(name, btn) {
+    // 1. Hide all tab panes completely
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+      pane.classList.remove('active');
+      pane.style.display = 'none'; // Explicitly override any CSS defaults
+    });
+    
+    // 2. Remove 'active' class styling from all tab buttons
+    document.querySelectorAll('.tab-bar .tab-btn').forEach(tabBtn => {
+      tabBtn.classList.remove('active');
+    });
+    
+    // 3. Find the specific target panel layout container
+    const targetPane = document.getElementById('pane-' + name);
+    if (targetPane) {
+      targetPane.classList.add('active');
+      targetPane.style.display = 'block'; // Make it visible
+      btn.classList.add('active');
+    } else {
+      console.error(`Tab pane container "pane-${name}" was not found in the DOM.`);
+    }
+  }
+
+  function showComingSoon(message) {
+    const toast = document.getElementById('comingSoonToast');
+    document.getElementById('toastMessage').textContent = message || 'This feature is under development.';
+    toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function selectProfile(name, btn) {
+    currentProfile = name;
+
+    document.querySelectorAll('.profile-btn').forEach(profileBtn => profileBtn.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.profile-fields-group').forEach(group => group.classList.remove('active'));
+    const selectedGroup = document.getElementById('fields_' + name);
+    if (selectedGroup) selectedGroup.classList.add('active');
+
+    const baseRow = document.getElementById('chk_base_row');
+    const baseCheckbox = document.getElementById('chk_base');
+    const baseSection = document.getElementById('basePlateSection');
+    if (PROFILES[name].hasBase) {
+      baseRow.style.display = 'flex';
+    } else {
+      baseRow.style.display = 'none';
+      baseCheckbox.checked = false;
+      baseSection.style.display = 'none';
+    }
+
+    document.getElementById('res_profile').textContent = PROFILES[name].label;
+    document.getElementById('diagramCaption').textContent = PROFILES[name].label + ' reference diagram';
+    renderDiagram(name);
+  }
+
+  function toggleBasePlate() {
+    const checked = document.getElementById('chk_base').checked;
+    document.getElementById('basePlateSection').style.display = checked ? 'block' : 'none';
+    updateSVGAnnotations();
+  }
+
+  function toggleBulbCustomFields() {
+    const show = document.getElementById('inp_bulb_size').value === 'others';
+    document.getElementById('bulbCustomFields').style.display = show ? 'block' : 'none';
+  }
+
+  async function renderDiagram(name) {
+    const box = document.getElementById('diagramBox');
+    const profile = PROFILES[name];
+    if (!profile) return;
+
+    if (!cachedSVGData[name]) {
+      try {
+        const response = await fetch(`/static/images/section_modulus/profile-${profile.code}.svg`);
+        if (!response.ok) throw new Error();
+        cachedSVGData[name] = await response.text();
+      } catch (err) {
+        box.innerHTML = '<span style="color:#ff8060;font-family:monospace;font-size:11px;">Diagram asset missing.</span>';
+        return;
+      }
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(cachedSVGData[name], 'image/svg+xml');
+    const svgElement = doc.querySelector('svg');
+    box.innerHTML = '';
+
+    if (!svgElement) {
+      box.innerHTML = '<span style="color:#ff8060;font-family:monospace;font-size:11px;">Diagram asset could not be read.</span>';
+      return;
+    }
+
+    box.appendChild(svgElement);
+    updateSVGAnnotations();
+  }
+
+  function updateSVGAnnotations() {
+    const svgElement = document.getElementById('diagramBox').querySelector('svg');
+    if (!svgElement) return;
+
+    const bpValue = document.getElementById('inp_bp')?.value || '200';
+    const tpValue = document.getElementById('inp_tp')?.value || '12';
+    const svgBpText = svgElement.getElementById('svg_bp_val');
+    const svgTpText = svgElement.getElementById('svg_tp_val');
+
+    if (svgBpText) svgBpText.textContent = bpValue;
+    if (svgTpText) svgTpText.textContent = tpValue;
+  }
+
+  function generateWordReport() {
+  const profileCode = currentProfile;
+  const profileLabel = PROFILES[profileCode].label;
+  
+  const payload = {
+    profile: profileLabel,
+    z_bottom: document.getElementById('res_Z').textContent,
+    area: document.getElementById('res_A').textContent,
+    centroid: document.getElementById('res_ybar').textContent,
+    moment_of_inertia: document.getElementById('res_I').textContent,
+    
+    // Fallback extraction matching dynamic active selection inputs
+    web_height: profileCode === 'FB' ? document.getElementById('inp_FB_h').value : (document.getElementById(`inp_${profileCode}_hw`)?.value || "0"),
+    web_thickness: profileCode === 'FB' ? document.getElementById('inp_FB_t').value : (document.getElementById(`inp_${profileCode}_tw`)?.value || "0"),
+    flange_width: profileCode === 'FB' ? "0" : (document.getElementById(`inp_${profileCode}_bf`)?.value || "0"),
+    flange_thickness: profileCode === 'FB' ? "0" : (document.getElementById(`inp_${profileCode}_tf`)?.value || "0")
+  };
+
+  if (payload.z_bottom === "--") {
+    alert("Please click 'Calculate' to generate engineering results before exporting to Word.");
+    return;
+  }
+
+  fetch('/api/section-modulus/export-word', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(response => {
+    if (!response.ok) throw new Error("Word file streaming pipeline generation broke.");
+    return response.blob();
+  })
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CSL_Design_Report_${profileLabel.replace(/\s+/g, '_')}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  })
+  .catch(error => {
+    console.error(error);
+    alert(`Export failure: ${error.message}`);
+  });
+}
+
+  // ════════════════════════════════════════════════
+  // ACTIVE CALCULATION LOGIC HANDLER
+  // ════════════════════════════════════════════════
+  function executeCalculation() {
+    let payload = {
+      profile: currentProfile
+    };
+
+    if (currentProfile === 'T' || currentProfile === 'L' || currentProfile === 'I' || currentProfile === 'C') {
+      payload.web_height = document.getElementById(`inp_${currentProfile}_hw`).value;
+      payload.web_thickness = document.getElementById(`inp_${currentProfile}_tw`).value;
+      payload.flange_width = document.getElementById(`inp_${currentProfile}_bf`).value;
+      payload.flange_thickness = document.getElementById(`inp_${currentProfile}_tf`).value;
+
+      if (!payload.web_height || !payload.web_thickness || !payload.flange_width || !payload.flange_thickness) {
+        alert("Please ensure all cross section dimension parameters are correctly inputted before running evaluation formulas.");
+        return;
+      }
+    }
+    else if (currentProfile === 'FB') {
+      payload.bar_height = document.getElementById('inp_FB_h').value;
+      payload.bar_thickness = document.getElementById('inp_FB_t').value;
+
+      if (!payload.bar_height || !payload.bar_thickness) {
+        alert("Please ensure all Flat Bar dimensional parameters are completely filled.");
+        return;
+      }
+    }
+    else if (currentProfile === 'BF') {
+      payload.bulb_size = document.getElementById('inp_bulb_size').value;
+      if (payload.bulb_size === 'others') {
+        payload.web_height = document.getElementById('inp_BF_hw').value;
+        payload.web_thickness = document.getElementById('inp_BF_tw').value;
+        payload.bulb_diameter = document.getElementById('inp_BF_db').value;
+        payload.bulb_thickness = document.getElementById('inp_BF_tb').value;
+
+        if (!payload.web_height || !payload.web_thickness || !payload.bulb_diameter || !payload.bulb_thickness) {
+          alert("Please fill out all custom Bulb Flat parameters.");
+          return;
+        }
+      }
+    }
+
+
+    fetch('/api/t-section/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(async response => {
+      // Read the response body if available to extract the backend error message
+      const isJson = response.headers.get('content-type')?.includes('application/json');
+      const data = isJson ? await response.json() : null;
+
+      if (!response.ok) {
+        const errorMsg = (data && data.error) ? data.error : `Status Code: ${response.status}`;
+        throw new Error(errorMsg);
+      }
+      return data;
+    })
+    .then(data => {
+      if (data && data.ok) {
+        document.getElementById('resultsEmpty').style.display = 'none';
+        document.getElementById('resultsPreview').style.display = 'block';
+
+        document.getElementById('res_Z').textContent = (data.results.z_bottom / 1000).toFixed(2);  // mm³ -> cm³
+        document.getElementById('res_A').textContent = (data.results.area / 100).toFixed(2);        // mm² -> cm²
+        document.getElementById('res_ybar').textContent = data.results.centroid.toFixed(1);         // mm
+        document.getElementById('res_I').textContent = (data.results.moment_of_inertia / 10000).toFixed(2); // mm⁴ -> cm⁴
+        document.getElementById('print_res_Z').textContent = (data.results.z_bottom / 1000).toFixed(2) + " cm³";
+        document.getElementById('print_res_A').textContent = (data.results.area / 100).toFixed(2) + " cm²";
+        document.getElementById('print_res_ybar').textContent = data.results.centroid.toFixed(1) + " mm";
+        document.getElementById('print_res_I').textContent = (data.results.moment_of_inertia / 10000).toFixed(2) + " cm⁴";
+    
+        const profileLabel = PROFILES[currentProfile].label;
+        document.getElementById('print_in_profile').textContent = profileLabel;
+    
+        // Explicit project name definition matching exactly
+        document.getElementById('print_cover_project').textContent = "NEXUS: MARINE DESIGN SUITE (" + profileLabel + ")";
+    
+        if (currentProfile === 'FB') {
+          document.getElementById('print_in_hw').textContent = document.getElementById('inp_FB_h').value + " mm";
+          document.getElementById('print_in_tw').textContent = document.getElementById('inp_FB_t').value + " mm";
+          document.getElementById('print_in_bf').textContent = "N/A";
+          document.getElementById('print_in_tf').textContent = "N/A";
+        } else {
+          document.getElementById('print_in_hw').textContent = (document.getElementById(`inp_${currentProfile}_hw`)?.value || "0") + " mm";
+          document.getElementById('print_in_tw').textContent = (document.getElementById(`inp_${currentProfile}_tw`)?.value || "0") + " mm";
+          document.getElementById('print_in_bf').textContent = (document.getElementById(`inp_${currentProfile}_bf`)?.value || "0") + " mm";
+          document.getElementById('print_in_tf').textContent = (document.getElementById(`inp_${currentProfile}_tf`)?.value || "0") + " mm";
+        }
+    
+        const formattedDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+        document.getElementById('print_date_cover').textContent = formattedDate;
+        document.querySelectorAll('.live-date-stub').forEach(element => {
+          element.textContent = formattedDate;
+        });
+
+      } else {
+        alert("Calculation Processing Error: " + (data?.error || "Unknown error"));
+      }
+    })
+    .catch(error => {
+      console.error("Communication Pipeline Error:", error);
+      alert(`Pipeline failure: ${error.message}\nCheck your terminal console where Flask is running.`);
+    });
+  }
+  // ════════════════════════════════════════════════
+  // ADVANCED CROSS SECTION BUILDER CONTROL FUNCTIONS
+  // ════════════════════════════════════════════════
+
+  function addCoordinateRow() {
+    const tbody = document.getElementById('coordTableBody');
+    const rowCount = tbody.rows.length + 1;
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>${rowCount}</td>
+      <td><input type="number" class="coord-x" value="0" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+      <td><input type="number" class="coord-y" value="0" style="width: 80%; padding: 6px; background: var(--navy); border: 1px solid var(--steel); color: var(--white); font-family: 'DM Mono', monospace;"></td>
+      <td><button type="button" style="background:none; border:none; color:#ff8060; cursor:pointer; font-family:'DM Mono', monospace; font-size:0.7rem;" onclick="this.closest('tr').remove(); reindexNodes();">Delete</button></td>
+    `;
+  }
+  
+  function reindexNodes() {
+    const rows = document.querySelectorAll('#coordTableBody tr');
+    rows.forEach((row, index) => {
+      row.cells[0].textContent = index + 1;
+    });
+  }
+
+  function executeAdvancedCalculation() {
+    const rows = document.querySelectorAll('#coordTableBody tr');
+    let vertices = [];
+
+    rows.forEach(row => {
+      const x = parseFloat(row.querySelector('.coord-x').value) || 0;
+      const y = parseFloat(row.querySelector('.coord-y').value) || 0;
+      vertices.push({ x: x, y: y });
+    });
+
+    fetch('/api/advanced-section/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vertices: vertices })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Server framework calculation failure.");
+      return res.json();
+    })
+    .then(data => {
+      if(data.ok) {
+        document.getElementById('adv_res_Z').textContent = (data.results.z_bottom / 1000).toFixed(2);
+        document.getElementById('adv_res_A').textContent = (data.results.area / 100).toFixed(2);
+        document.getElementById('adv_res_ybar').textContent = data.results.centroid.toFixed(1);
+        document.getElementById('adv_res_I').textContent = (data.results.moment_of_inertia / 10000).toFixed(2);
+      } else {
+        alert("Error: " + data.error);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Pipeline failure connecting to advanced calculation backend.");
+    });
+  }
+
+
+
+  document.getElementById('inp_bp').addEventListener('input', updateSVGAnnotations);
+  document.getElementById('inp_tp').addEventListener('input', updateSVGAnnotations);
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    selectProfile('T', document.querySelector('.profile-btn'));
+  });
+  function downloadExcelExport() {
+    const profile = document.getElementById('res_profile').textContent;
+    const area = document.getElementById('res_A').textContent;
+    const centroid = document.getElementById('res_ybar').textContent;
+    const inertia = document.getElementById('res_I').textContent;
+    const modulus = document.getElementById('res_Z').textContent;
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "NEXUS MARINE DESIGN SUITE - REPORT\r\n";
+    csvContent += `Profile Type,${profile}\r\n\r\n`;
+    csvContent += "Property,Value,Unit\r\n";
+    csvContent += `Section Modulus (Bottom),${modulus},cm3\r\n`;
+    csvContent += `Total Cross-Sectional Area,${area},cm2\r\n`;
+    csvContent += `Centroid Position (y-bar),${centroid},mm\r\n`;
+    csvContent += `Moment of Inertia (Ix),${inertia},cm4\r\n`;
+
+    const encodedUri = encodeURI(csvContent);
+    const downloadLink = document.createElement("a");
+    downloadLink.setAttribute("href", encodedUri);
+    downloadLink.setAttribute("download", `Nexus_Design_Report_${profile.replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(downloadLink);
+    
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  }
+  function generateExcelReport() {
+    const payload = {
+      profile: document.getElementById('res_profile').textContent,
+      z_bottom: document.getElementById('res_Z').textContent,
+      area: document.getElementById('res_A').textContent,
+      centroid: document.getElementById('res_ybar').textContent,
+      moment_of_inertia: document.getElementById('res_I').textContent
+    };
+
+    if (payload.z_bottom === "--") {
+      alert("Please click 'Calculate' to generate engineering results before exporting to Excel.");
+      return;
+    }
+
+    fetch('/api/section-modulus/export-excel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Excel export pipeline failed.");
+      return response.blob(); // Get the data as a downloadable file blob
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Nexus_Design_Report_${payload.profile.replace(/\s+/g, '_')}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    })
+    .catch(error => {
+      console.error(error);
+      alert("Export Pipeline failure: Could not generate file.");
+    });
+  }
+
+</script>
+{% endblock %}

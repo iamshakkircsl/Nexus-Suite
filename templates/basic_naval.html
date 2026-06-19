@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% set active_pillar = 'na' %}
+
+{% block title %}Basic Naval Architecture — CSL Design Portal{% endblock %}
+
+{% block extra_style %}
+<style>
+  :root { 
+    --col: var(--na-col); 
+  }
+
+  /* Reduced workspace top whitespace below the dark nav bar */
+  .pillar-hero {
+    padding-top: 0.5rem; 
+    padding-bottom : 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .pillar-header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  /* Massive Authoritative Heading Metrics using global system typography tokens */
+  .pillar-page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 7vw, 5.5rem);
+    font-weight: 900;
+    line-height: 0.85;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+
+  /* Tri-Color Heading Accent Map */
+  .pillar-page-title .text-blue   { color: var(--na-col); } /* Primary engineering blue accent */
+
+  /* Reduced spacing boundary above the tool section canvas */
+  .tools-section {
+    margin-top: 0px;
+    padding-top: 0.5rem; 
+  }
+
+  .compact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 2.5rem;
+    row-gap: 1.5rem;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* Engineered structural tool blocks utilizing global card geometry */
+  .compact-tool-link {
+    text-decoration: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    background-color: var(--deep); /* Pure white resting card popper background */
+    padding: 1.25rem 2rem;
+    border-radius: 4px;            /* Slight 4px technical rounded trim matching homepage menu */
+    box-shadow: 0 4px 6px rgba(15, 23, 42, 0.04);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--steel);
+    border-left: 6px solid var(--na-col); /* Distinctive pillar indicator accent line */
+  }
+
+  /* Illuminated Active State Inversion Override */
+  .compact-tool-link:hover {
+    background-color: var(--na-col);  /* Cards instantly light up with signature blue */
+    color: #ffffff !important;         /* Forces text white for structural contrast accessibility */
+    border-color: var(--na-col);
+    border-left-color: #ffffff;
+    transform: translateY(-2px);       /* Subtle lift engagement */
+    box-shadow: 0 8px 24px rgba(3, 105, 161, 0.25); /* Rich technical neon blue shadow aura glow */
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <section class="pillar-hero" data-num="01">
+    <div class="pillar-header-container">
+      <a href="{{ url_for('homepage') }}" class="back-link">← Back to portal</a>
+      <h1 class="pillar-page-title">
+        <span class="text-blue">BASIC</span> 
+        <span class="text-blue">NAVAL</span> 
+        <span class="text-blue">ARCHITECTURE</span>
+      </h1>
+    </div>
+  </section>
+
+  <main class="tools-section">
+    <div class="compact-grid">
+
+      <a href="{{ url_for('chain_locker') }}" class="compact-tool-link">CHAIN LOCKER SPACE</a>
+      <a href="#" class="compact-tool-link">TONNAGE CALCULATION</a>
+      <a href="#" class="compact-tool-link">FREEBOARD CALCULATION</a>
+      <a href="#" class="compact-tool-link">TANK CAPACITIES CALCULATION</a>
+      <a href="#" class="compact-tool-link">SHIP LIGHT ESTIMATION</a>
+      <a href="#" class="compact-tool-link">PILE ANCHOR PULL OUT CALCULATION</a>
+      <a href="#" class="compact-tool-link">RAO Calculation</a>
+
+    </div>
+  </main>
+
+{% endblock %}
